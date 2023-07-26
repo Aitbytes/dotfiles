@@ -1,0 +1,12 @@
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias r=ranger
+alias glvd='~/Scripts/Glaval.sh 1;glava -d'
+alias mkcd='function _mkcd(){mkdir $1; cd $1;}; _mkcd'
+
+alias xmd='~/Scripts/xmodmap.sh'
+alias ll='ls -l'
+alias vpnInsa="insa-toulouse.fr:443"
+alias serverInsa="srv-ens-calcul.insa-toulouse.fr"
+alias say=echo
