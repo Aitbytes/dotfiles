@@ -1,0 +1,4 @@
+[submodule "Some Name"]
+    path = i3/Scripts/wal/Scripts/pywal-obsidianmd
+    url = https://github.com/Aitbytes/pywalobsidianmd.git
+
