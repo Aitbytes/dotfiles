@@ -8,7 +8,7 @@
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
 
 set $mod Mod4
-set $wallpapers ~/Pictures/Landscape
+set $wallpapers ~/Pictures/Wallpapers/Landscape
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
 font  pango:JetBrainsMono Nerd Font  10
@@ -242,14 +242,19 @@ gaps inner 10px
 # gaps outer 10px
 smart_gaps inverse_outer
 
+#===wm specific startup====
+exec_always ~/Scripts/wal/Scripts/update.sh $wallpapers && picom
+exec_always --no-startup-id $HOME/.config/polybar/hack/launch.sh
+
+#=====old stuff=======
 #=== Custom Commands ===
 
-bindsym $mod+w exec --no-startup-id ~/Scripts/wal/Scripts/update.sh $wallpapers
-bindsym $mod+Shift+w exec --no-startup-id ~/Scripts/wal/Scripts/update.sh $(sxiv -o -t -r ~/Pictures)
-bindsym $mod+c exec --no-startup-id vscodium
-bindsym $mod+Shift+g exec --no-startup-id ~/Scripts/wal/Scripts/setGlaval.sh
-bindsym $mod+Shift+x exec --no-startup-id i3lock -i ~/Pictures/monitored.png
-bindsym $mod+Shift+a exec --no-startup-id change_alacritty_opacity.sh
+# bindsym $mod+w exec --no-startup-id ~/Scripts/wal/Scripts/update.sh $wallpapers
+# bindsym $mod+Shift+w exec --no-startup-id ~/Scripts/wal/Scripts/update.sh $(sxiv -o -t -r ~/Pictures)
+# bindsym $mod+c exec --no-startup-id vscodium
+# bindsym $mod+Shift+g exec --no-startup-id ~/Scripts/wal/Scripts/setGlaval.sh
+# bindsym $mod+Shift+x exec --no-startup-id i3lock -i ~/Pictures/monitored.png
+# bindsym $mod+Shift+a exec --no-startup-id change_alacritty_opacity.sh
 #=== Custom startup ===
 
 #bindsym $mod+p exec --no-startup-id alacritty -e bash -c 'ls; read -p "Press enter to continue"'
@@ -260,9 +265,7 @@ bindsym $mod+Shift+a exec --no-startup-id change_alacritty_opacity.sh
 # exec_always --no-startup-id keepassxc
 
 #Changes the wall paper and generate color scheme
-exec_always ~/Scripts/wal/Scripts/update.sh $wallpapers && picom
 # Changes keybinding
 # exec_always --no-startup-id xmodmap ~/.Xmodmap
 # Launch Polybar
-exec_always --no-startup-id $HOME/.config/polybar/hack/launch.sh
 

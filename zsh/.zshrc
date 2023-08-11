@@ -26,7 +26,6 @@ compinit
 _comp_options+=(globdots)		# Include hidden files.
 
 # vi mode
-#bindkey -v
 #export KEYTIMEOUT=1
 
 # Use vim keys in tab complete menu:
@@ -83,6 +82,8 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias ll='ls -l'
 alias v='nvim'
+
+bindkey -v
 
 #take color scheme from wal
 (cat ~/.cache/wal/sequences &)
