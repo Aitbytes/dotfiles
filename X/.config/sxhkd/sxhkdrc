@@ -1,2 +1,24 @@
-super + i
-      dmenu_run
+# update.sh with $wallpapers
+super + alt + w
+	~/Scripts/wal/Scripts/update.sh ~/Pictures/Wallpapers/Landscape/
+
+# update.sh with sxiv output
+super + shift + w
+	~/Scripts/wal/Scripts/update.sh $(sxiv -o -t -r ~/Pictures/Wallpapers)
+
+# open vscodium
+super + c
+	vscodium
+
+# setGlaval.sh
+super + shift + g
+	~/Scripts/wal/Scripts/setGlaval.sh
+
+# i3lock
+super + shift + x
+	i3lock -i ~/Pictures/Wallpapers/monitored.png
+
+# change_alacritty_opacity.sh
+super + shift + a
+	switch_view_mode.sh
+      
