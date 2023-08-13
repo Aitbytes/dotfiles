@@ -1,5 +1,5 @@
 # update.sh with $wallpapers
-super + alt + w
+super + w
 	~/Scripts/wal/Scripts/update.sh ~/Pictures/Wallpapers/Landscape/
 
 # update.sh with sxiv output

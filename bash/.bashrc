@@ -27,3 +27,4 @@ source ~/.cache/wal/colors-tty.sh
 
 alias r=ranger
 alias glvd='~/Scripts/Glaval.sh 1;glava -d'
+. "$HOME/.cargo/env"
