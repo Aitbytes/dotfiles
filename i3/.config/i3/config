@@ -48,7 +48,7 @@ floating_modifier $mod
 tiling_drag modifier titlebar
 
 # start a terminal
-bindsym $mod+Return exec tabbed alacritty --embed
+# bindsym $mod+Return exec alacritty -e tmux
 
 # kill focused window
 bindsym $mod+x kill
@@ -215,11 +215,13 @@ client.background       $bg
 # PROTIP: You can also dynamically set dmenu's colors this way:
 #bindsym $mod+d exec dmenu_run -nb "$fg" -nf "$bg" -sb "$bg" -sf "$fg"
 
-bindsym $mod+d exec --no-startup-id ~/.config/rofi/launchers/type-1/launcher.sh
-bindsym $mod+Shift+d exec --no-startup-id ~/.config/rofi/launchers/type-3/launcher.sh
+# bindsym $mod+d exec --no-startup-id ~/.config/rofi/launchers/type-1/launcher.sh
+# bindsym $mod+Shift+d exec --no-startup-id ~/.config/rofi/launchers/type-3/launcher.sh
 
 
 bindsym Mod1+Tab exec rofi -show window
+
+bindsym $mod+y floating enable; resize set 55ppt 98ppt; move position center
 
 #=== Scratch pad ====
 # Make the currently focused window a scratchpad
@@ -243,8 +245,8 @@ gaps inner 10px
 smart_gaps inverse_outer
 
 #===wm specific startup====
-exec_always ~/Scripts/wal/Scripts/update.sh $wallpapers && picom
-exec_always --no-startup-id $HOME/.config/polybar/hack/launch.sh
+exec_always mywallpaperscript.sh $wallpapers && picom
+exec_always --no-startup-id $HOME/.config/polybar/hack/launch.sh && sleep 0.05 && polybar-msg cmd hide
 
 #=====old stuff=======
 #=== Custom Commands ===
