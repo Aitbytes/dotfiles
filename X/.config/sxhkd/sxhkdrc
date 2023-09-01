@@ -1,10 +1,10 @@
 # update.sh with $wallpapers
 super + w
-	~/Scripts/wal/Scripts/update.sh ~/Pictures/Wallpapers/Landscape/
+	wal-set.sh $wallpapers
 
 # update.sh with sxiv output
 super + shift + w
-	~/Scripts/wal/Scripts/update.sh $(sxiv -o -t -r ~/Pictures/Wallpapers)
+	wal-set.sh $(sxiv -o -t -r $wallpapers/..)
 
 # open vscodium
 super + c
@@ -22,3 +22,13 @@ super + shift + x
 super + shift + a
 	switch_view_mode.sh
       
+super + Return
+  alacritty -e tmux
+
+super + d
+  ~/.config/rofi/launchers/type-1/launcher.sh
+super + shift + d
+  ~/.config/rofi/launchers/type-3/launcher.sh
+
+super + t
+  ~/.config/polybar/toggle.sh
