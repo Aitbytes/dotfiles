@@ -1,5 +1,11 @@
 export wallpapers=~/Pictures/Wallpapers/Landscape
-[[ -f ~/.Xmodmap ]] && xmodmap ~/.Xmodmap
-[[ -f ~/.config/sxhkd/sxhkdrc ]] && sxhkd &
+echo "executing xmodmap" >> ~/.xprofile.log
+[[ -f ~/.Xmodmap ]] && xmodmap ~/.Xmodmap >> ~/.xprofile.log 2>&1
+echo "executing sxhkd" >> ~/.xprofile.log
+[[ -f ~/.config/sxhkd/sxhkdrc ]] && sxhkd & >> ~/.xprofile.log 2>&1
+echo "executing wal-set" >> ~/.xprofile.log
+[[ -f ~/.local/bin/wal-set.sh ]] && wal-set.sh $wallpapers >> ~/.xprofile.log 2>&1
+picom & >> ~/.xprofile.log 2>&1
+[[ -f ~/.config/polybar/hack/launch.sh ]] && ~/.config/polybar/hack/launch.sh && sleep 0.05 && polybar-msg cmd hide
 
  #~/Scripts/wal/Scripts/update.sh $wallpapers && picom &

@@ -233,20 +233,22 @@ bindsym $mod+m scratchpad show
 #=== Assignements ===
 
 assign [class="Firefox"] 1
-
-# assign [class="^KeePassXC$"] 4
-
 assign [class="obsidian"] 3
 assign [class="thunderbird"] 5
+
 # You can also use any non-zero value if you'd like to have a border
 for_window [class=".*"] border pixel 0
 gaps inner 10px
 # gaps outer 10px
 smart_gaps inverse_outer
 
+# Recover layouts :
+exec_always --no-startup-id ~/.config/i3/startup/script.sh
+
+
 #===wm specific startup====
-exec_always mywallpaperscript.sh $wallpapers && picom
-exec_always --no-startup-id $HOME/.config/polybar/hack/launch.sh && sleep 0.05 && polybar-msg cmd hide
+# exec_always wal-set.sh $wallpapers && picom
+# exec_always --no-startup-id $HOME/.config/polybar/hack/launch.sh && sleep 0.05 && polybar-msg cmd hide
 
 #=====old stuff=======
 #=== Custom Commands ===

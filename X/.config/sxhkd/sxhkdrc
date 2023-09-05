@@ -20,7 +20,7 @@ super + shift + x
 
 # change_alacritty_opacity.sh
 super + shift + a
-	switch_view_mode.sh
+	picom-switch-window-effect.sh
       
 super + Return
   alacritty -e tmux
