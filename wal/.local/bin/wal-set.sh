@@ -14,12 +14,17 @@ LIB="$HOME/.local/lib"
 # Display the path for debugging purposes (can be removed if not needed)
 echo "Using wallpapers from: $WALLPAPERS_PATH"
 
+# select the image 
+image_path=$(find "$WALLPAPERS_PATH" | shuf | head -n 1)
+
 # Set the wallpaper and update related configurations
-wal -i "$WALLPAPERS_PATH" \
+wal -n -i "$image_path" \
 && pywalfox update \
 && Glawal.sh \
 && "$LIB/pywal-obsidianmd/pywal-obsidianmd.sh" "$VAULT_PATH" \
 && "$POLYBAR_SCRIPTS_PATH/pywal.sh" \
 && sleep 0.05 \
 && polybar-msg cmd hide
+
+feh --bg-max "$image_path"
 
