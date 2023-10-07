@@ -1,5 +1,5 @@
 source /etc/locale.conf
-PATH=$PATH:/home/a8taleb/.local/bin:/var/lib/snapd/snap/bin
+PATH=$PATH:/home/a8taleb/.local/bin:/var/lib/snapd/snap/bin:/home/a8taleb/.bun/bin
 # Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
 HISTSIZE=1002

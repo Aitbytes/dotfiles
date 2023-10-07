@@ -243,10 +243,11 @@ gaps inner 10px
 smart_gaps inverse_outer
 
 # Recover layouts :
-exec_always --no-startup-id ~/.config/i3/startup/script.sh
+exec_always --no-startup-id "i3-msg workspace 2; alacritty -e zellij --layout flex"
 
 
 #===wm specific startup====
+# exec_always --no-startup-id ~/.config/i3/startup/script.sh
 # exec_always wal-set.sh $wallpapers && picom
 # exec_always --no-startup-id $HOME/.config/polybar/hack/launch.sh && sleep 0.05 && polybar-msg cmd hide
 

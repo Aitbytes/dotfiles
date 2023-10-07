@@ -23,7 +23,7 @@ super + shift + a
 	picom-switch-window-effect.sh
       
 super + Return
-  alacritty -e tmux
+  alacritty -e zellij
 
 super + d
   ~/.config/rofi/launchers/type-1/launcher.sh
