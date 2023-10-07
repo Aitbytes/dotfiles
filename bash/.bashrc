@@ -28,3 +28,7 @@ source ~/.cache/wal/colors-tty.sh
 alias r=ranger
 alias glvd='~/Scripts/Glaval.sh 1;glava -d'
 . "$HOME/.cargo/env"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH=$BUN_INSTALL/bin:$PATH

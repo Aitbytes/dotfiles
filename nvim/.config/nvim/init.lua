@@ -168,6 +168,7 @@ require('lazy').setup({
       char = '┊',
       show_trailing_blankline_indent = false,
     },
+    version = "2.*"
   },
 
   -- "gc" to comment visual regions/lines
@@ -221,7 +222,7 @@ require('lazy').setup({
 
 -- Set the colorscheme
 
-vim.cmd.colorscheme 'tokyonight'
+vim.cmd.colorscheme 'catppuccin'
 
 -- [[Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -483,6 +484,7 @@ cmp.setup {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
     { name = 'path' },
+    { name = 'buffer' },
   },
 }
 --Autoformat on write

@@ -4,19 +4,19 @@
 /* center line thickness (pixels) */
 #define C_LINE 12
 /* outline color */
-#define OUTLINE #C240CA
+#define OUTLINE #A073A6
 /* number of bars (use even values for best results) */
 #define NBARS 80
 /* width (in pixels) of each bar*/
 #define BAR_WIDTH 14
 /* outline color */
-#define BAR_OUTLINE #C240CA
+#define BAR_OUTLINE #A073A6
 /* outline width (in pixels, set to 0 to disable outline drawing) */
-#define BAR_OUTLINE #C240CA
+#define BAR_OUTLINE #A073A6
 /* Amplify magnitude of the results each bar displays */
 #define AMPLIFY 600
 /* Bar color */ 
-#define COLOR (#5E059F * ((d / 40) + 1))
+#define COLOR (#EBBE62 * ((d / 40) + 1))
 /* Angle (in radians) for how much to rotate the visualizer */
 #define ROTATE (PI / 2)
 /* Whether to switch left/right audio buffers */
