@@ -1,4 +1,4 @@
-export wallpapers=~/Pictures/Wallpapers/Catpuccin
+export wallpapers=~/Pictures/Wallpapers/Catpuccin/misc
 echo "executing xmodmap" >> ~/.xprofile.log
 [[ -f ~/.Xmodmap ]] && xmodmap ~/.Xmodmap >> ~/.xprofile.log 2>&1
 echo "executing sxhkd" >> ~/.xprofile.log
