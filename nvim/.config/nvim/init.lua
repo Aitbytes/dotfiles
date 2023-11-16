@@ -222,7 +222,7 @@ require('lazy').setup({
 
 -- Set the colorscheme
 
-vim.cmd.colorscheme 'catppuccin'
+vim.cmd.colorscheme 'pywal'
 
 -- [[Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -508,6 +508,10 @@ require('ufo').setup({
     return { 'treesitter', 'indent' }
   end
 })
+
+local pywal = require('pywal')
+pywal.setup()
+
 
 -- Gets refactored configs
 require "user.mappings"

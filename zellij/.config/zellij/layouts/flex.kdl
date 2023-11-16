@@ -1,0 +1,9 @@
+layout {
+    pane split_direction="horizontal"{
+        pane command="zsh"
+        pane split_direction="vertical" {
+            pane command="neofetch"
+            pane command="htop"
+        }
+    }
+}

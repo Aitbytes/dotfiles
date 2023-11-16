@@ -245,6 +245,15 @@ smart_gaps inverse_outer
 # Recover layouts :
 exec_always --no-startup-id "i3-msg workspace 2; alacritty -e zellij --layout flex"
 
+## Screenshots
+bindsym Print exec --no-startup-id maim --format=png "/home/$USER/Pictures/$(date -u +%Y-%m-%dT%H:%M:%S%Z).png"
+bindsym $mod+Print exec --no-startup-id maim --format=png --window $(xdotool getactivewindow) "/home/$USER/Pictures/$(date -u +%Y-%m-%dT%H:%M:%S%Z).png"
+bindsym Shift+Print exec --no-startup-id maim --format=png --select "/home/$USER/Pictures/$(date -u +%Y-%m-%dT%H:%M:%S%Z).png"
+
+## Clipboard Screenshots
+bindsym Ctrl+Print exec --no-startup-id maim --format=png | xclip -selection clipboard -t image/png
+bindsym Ctrl+$mod+Print exec --no-startup-id maim --format=png --window $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
+bindsym Ctrl+Shift+Print exec --no-startup-id maim --format=png --select | xclip -selection clipboard -t image/png
 
 #===wm specific startup====
 # exec_always --no-startup-id ~/.config/i3/startup/script.sh
