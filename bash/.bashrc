@@ -32,3 +32,5 @@ alias glvd='~/Scripts/Glaval.sh 1;glava -d'
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH=$BUN_INSTALL/bin:$PATH
+
+source /home/a8taleb/.config/broot/launcher/bash/br
