@@ -1,4 +1,3 @@
-export wallpapers=~/Pictures/Wallpapers/Catpuccin/misc
 export wallpapers=~/Pictures/Wallpapers
 echo "executing xmodmap" >> ~/.xprofile.log
 [[ -f ~/.Xmodmap ]] && xmodmap ~/.Xmodmap >> ~/.xprofile.log 2>&1
