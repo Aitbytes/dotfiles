@@ -4,7 +4,7 @@ super + w
 
 # update.sh with sxiv output
 super + shift + w
-	wal-set.sh $(sxiv -o -t -r $wallpapers/..)
+	wal-set.sh $(sxiv -o -t -r $wallpapers/)
 
 # open vscodium
 super + c
