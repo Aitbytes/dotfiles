@@ -396,14 +396,21 @@ end
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property 'filetypes' to the map in question.
 local servers = {
-  -- clangd = {},
+  clangd = { filetypes = { "c", "cpp"}},
   -- gopls = {},
   -- pyright = {},
   rust_analyzer = {
     filetypes = { "rust" },
   },
-  -- tsserver = {},
+  tsserver = {
+    filetypes = { 'typescript', 'javascript' }
+  },
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
+  ltex = {
+     ltex = {
+        language = "fr-FR"  -- Override the ltex.language setting
+     }
+  },
 
   lua_ls = {
     Lua = {
@@ -485,6 +492,7 @@ cmp.setup {
     { name = 'luasnip' },
     { name = 'path' },
     { name = 'buffer' },
+    { name = 'codeium' },
   },
 }
 --Autoformat on write
