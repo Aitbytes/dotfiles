@@ -11,3 +11,4 @@ alias vpnInsa="insa-toulouse.fr:443"
 alias serverInsa="srv-ens-calcul.insa-toulouse.fr"
 alias say=echo
 alias c='cd $HOME/.config/'
+alias nv='cd $HOME/.config/nvim'
