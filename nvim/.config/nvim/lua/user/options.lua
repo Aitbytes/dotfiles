@@ -53,6 +53,11 @@ vim.o.scrolloff = 8
 
 --Expand tabs to spaces
 vim.o.expandtab = true
+--
+--Enable line wraping
+-- vim.o.wrap = true
+-- vim.o.textwidth = 80
+
 
 --Set the number of spaces for a tabs
 vim.o.tabstop = 2
@@ -60,3 +65,7 @@ vim.o.shiftwidth = 2
 
 vim.o.foldmethod = "expr"
 vim.o.foldexpr = "nvim_treesitter#foldexpr()"
+
+--Set the default shell for the terminal
+vim.o.shell = '/bin/zsh'
+

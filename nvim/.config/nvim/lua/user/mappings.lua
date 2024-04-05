@@ -18,6 +18,10 @@ vim.api.nvim_set_keymap('n', '<C-h>', "<C-w>h", {  silent = true })
 vim.keymap.set('n', '<Space>ee', ":Neotree toggle<CR>", { silent = true, desc = "toogle Neo-tree"})
 vim.keymap.set('n', '<Space>eb', ":Neotree toggle show buffers right<CR>", { silent = true, desc = "Toggle Neo-tree buffers"})
 vim.keymap.set('n', '<Space>es', ":Neotree toggle float git-status", { silent = true, desc = "Toggle Neo-tree git"})
+--Split screen with terminal at the right
+vim.keymap.set({"n", "v", "t"}, "<leader>et",":vsplit<CR><C-w>l:terminal<CR>a" , {silent = true, desc="Split screen with terminal at the right "})
+vim.keymap.set({"n", "v", "t"}, "<leader>eg",":LazyGit<CR>" , {silent = true, desc="Open Lazygit"})
+
 
 -- Navigate buffers
 vim.keymap.set("n", "<S-l>", ":bnext<CR>", {silent = true, desc=" "})
@@ -52,4 +56,24 @@ vim.keymap.set({"n", "v", "t"}, "<leader><C-w>", ":colorscheme pywal<CR>", {sile
 
 --Autoformat
 vim.keymap.set({"n", "v", "t"}, "<leader>lf", vim.lsp.buf.format, {silent = true, desc="Format the file "})
+
+
+-- Open LazyGit
+vim.keymap.set({"n", "v", "t"}, "<leader>lg", ":LazyGit<CR>", {silent = true, desc="Open LazyGit "})
+--
+
+
+--Specific to harpoon
+
+local harpoon = require("harpoon")
+
+-- REQUIRED
+harpoon:setup()
+-- REQUIRED
+
+vim.keymap.set("n", "<leader>ha", function() harpoon:list():append() end, {silent = true, desc="Add to harpoon"})
+vim.keymap.set("n", "<leader>eh", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, {silent = true, desc="toggle harpoon menu"})
+
+
+
 
