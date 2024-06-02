@@ -1,4 +1,26 @@
 export wallpapers=~/Pictures/Wallpapers
+export PATH=/home/a8taleb/.local/share/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/java-20-openjdk/bin:/usr/lib/jvm/java-17-openjdk/bin:/home/a8taleb/.local/bin:/opt/android-sdk/tools:/opt/android-sdk/tools/bin:/op
+
+
+export XDG_CONFIG_HOME=$HOME/.config
+export XDG_DATA_HOME=$HOME/.local/share
+export XDG_CACHE_HOME=$HOME/.cache
+export XDG_STATE_HOME=$HOME/.local/state
+
+export ANDROID_USER_HOME=/home/a8taleb/.local/share/android
+export ANSIBLE_HOME=/home/a8taleb/.local/share/ansible
+export HISTFILE=/home/a8taleb/.local/state/bash/history
+export CARGO_HOME=/home/a8taleb/.local/share/cargo
+export DOCKER_CONFIG=/home/a8taleb/.config/docker
+export GNUPGHOME=/home/a8taleb/.local/share/gnupg
+export GRADLE_USER_HOME="$XDG_DATA_HOME"/gradle
+export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc
+export LESSHISTFILE="$XDG_STATE_HOME"/less/history
+export MPLAYER_HOME="$XDG_CONFIG_HOME"/mplayer
+export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME"/npm/npmrc
+. "$CARGO_HOME/env"
+
+t/flutter/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/usr/lib/rustup/bin:/home/a8taleb/bin
 echo "executing xmodmap" >> ~/.xprofile.log
 [[ -f ~/.Xmodmap ]] && xmodmap ~/.Xmodmap >> ~/.xprofile.log 2>&1
 echo "executing sxhkd" >> ~/.xprofile.log
