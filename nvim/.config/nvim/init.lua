@@ -274,7 +274,7 @@ vim.keymap.set('n', '<leader>sc', require('telescope.builtin').colorscheme, { de
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim', 'yaml', 'json', 'dockerfile', 'html', 'css' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -397,21 +397,21 @@ end
 --  define the property 'filetypes' to the map in question.
 local servers = {
   clangd = { filetypes = { "c", "cpp"}},
-  -- gopls = {},
-  -- pyright = {},
+  gopls = {},
+  pyright = {},
   rust_analyzer = {
     filetypes = { "rust" },
   },
   tsserver = {
     filetypes = { 'typescript', 'javascript' }
   },
-  -- html = { filetypes = { 'html', 'twig', 'hbs'} },
+  html = { filetypes = { 'html', 'twig', 'hbs'} },
   ltex = {
      ltex = {
         language = "fr-FR"  -- Override the ltex.language setting
      }
   },
-
+  ansiblels = {},
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
