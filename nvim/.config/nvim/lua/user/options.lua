@@ -69,3 +69,11 @@ vim.o.foldexpr = "nvim_treesitter#foldexpr()"
 --Set the default shell for the terminal
 vim.o.shell = '/bin/zsh'
 
+vim.g.terminal_emulator = "zsh"
+-- Options for float term
+--vim.go.floaterm_shell = "/bin/zsh"
+--vim.cmd([[ let g:floaterm_shell = "zsh" ]])
+
+
+
+
