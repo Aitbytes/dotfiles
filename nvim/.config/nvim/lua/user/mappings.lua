@@ -74,6 +74,25 @@ harpoon:setup()
 vim.keymap.set("n", "<leader>ha", function() harpoon:list():append() end, {silent = true, desc="Add to harpoon"})
 vim.keymap.set("n", "<leader>eh", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, {silent = true, desc="toggle harpoon menu"})
 
+-- Float Terminal
+-- vim.keymap.set("n","<leader>tt", ":FloatermNew<CR>", {silent = true, desc="Open floaterm"})
+-- vim.keymap.set("n","<leader>tf", ":FloatermToggle<CR>", {silent = true, desc="Toggle floaterm"})
+-- vim.keymap.set("n","<leader>tn", ":FloatermNext<CR>", {silent = true, desc="Next floaterm"})
+-- vim.keymap.set("n","<leader>tp", ":FloatermPrevious<CR>", {silent = true, desc="Previous floaterm"})
+--
+--
+-- vim.keymap.set("t","<leader>tf", "<C-\\><C-N>:FloatermToggle<CR>", {silent = true, desc="Toggle floaterm"})
+-- vim.keymap.set("t","<leader>tn", "<C-\\><C-N>:FloatermNext<CR>", {silent = true, desc="Next floaterm"})
+-- vim.keymap.set("t","<leader>tp", "<C-\\><C-N>:FloatermPrevious<CR>", {silent = true, desc="Previous floaterm"})
+--
+-- Toogle Terminal
 
+vim.keymap.set("n", "<leader>tt", ":ToggleTerm<CR>", {silent = true, desc="Toggle terminal"})
+-- vim.keymap.set("", "<leader>tt", ":ToggleTerm<CR>", {silent = true, desc="Toggle terminal"})
+
+require"toggleterm".setup {
+  size = 55,
+  direction = "vertical"
+}
 
 
