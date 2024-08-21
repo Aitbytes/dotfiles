@@ -19,8 +19,8 @@ vim.keymap.set('n', '<Space>ee', ":Neotree toggle<CR>", { silent = true, desc = 
 vim.keymap.set('n', '<Space>eb', ":Neotree toggle show buffers right<CR>", { silent = true, desc = "Toggle Neo-tree buffers"})
 vim.keymap.set('n', '<Space>es', ":Neotree toggle float git-status", { silent = true, desc = "Toggle Neo-tree git"})
 --Split screen with terminal at the right
-vim.keymap.set({"n", "v", "t"}, "<leader>et",":vsplit<CR><C-w>l:terminal<CR>a" , {silent = true, desc="Split screen with terminal at the right "})
-vim.keymap.set({"n", "v", "t"}, "<leader>eg",":LazyGit<CR>" , {silent = true, desc="Open Lazygit"})
+vim.keymap.set({"n", "v"}, "<leader>et",":vsplit<CR><C-w>l:terminal<CR>a" , {silent = true, desc="Split screen with terminal at the right "})
+vim.keymap.set({"n", "v"}, "<leader>eg",":LazyGit<CR>" , {silent = true, desc="Open Lazygit"})
 
 
 -- Navigate buffers
@@ -51,15 +51,15 @@ vim.keymap.set("t", "<C-k>", "<C-\\><C-N><C-w>k", {silent = true, desc="Go up"})
 vim.keymap.set("t", "<C-l>", "<C-\\><C-N><C-w>l", {silent = true, desc="Go right "})
 
 -- Set theme from wall
-vim.keymap.set({"n", "v", "t"}, "<leader><C-w>", ":colorscheme pywal<CR>", {silent = true, desc="Get the colortheme from lushwal "})
+vim.keymap.set({"n", "v"}, "<leader><C-w>", ":colorscheme pywal<CR>", {silent = true, desc="Get the colortheme from lushwal "})
 --
 
 --Autoformat
-vim.keymap.set({"n", "v", "t"}, "<leader>lf", vim.lsp.buf.format, {silent = true, desc="Format the file "})
+vim.keymap.set({"n", "v"}, "<leader>lf", vim.lsp.buf.format, {silent = true, desc="Format the file "})
 
 
 -- Open LazyGit
-vim.keymap.set({"n", "v", "t"}, "<leader>lg", ":LazyGit<CR>", {silent = true, desc="Open LazyGit "})
+vim.keymap.set({"n", "v"}, "<leader>lg", ":LazyGit<CR>", {silent = true, desc="Open LazyGit "})
 --
 
 
