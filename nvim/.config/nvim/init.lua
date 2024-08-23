@@ -222,7 +222,7 @@ require('lazy').setup({
 
 -- Set the colorscheme
 
-vim.cmd.colorscheme 'pywal'
+vim.cmd.colorscheme 'tokyonight-moon'
 
 -- [[Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
