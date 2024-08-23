@@ -518,7 +518,7 @@ require('ufo').setup({
 })
 
 local pywal = require('pywal')
-pywal.setup()
+-- pywal.setup()
 
 
 -- Gets refactored configs
