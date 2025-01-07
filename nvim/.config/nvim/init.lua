@@ -396,22 +396,27 @@ end
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property 'filetypes' to the map in question.
 local servers = {
-  clangd = { filetypes = { "c", "cpp"}},
+  clangd = { filetypes = { "c", "cpp" } },
   gopls = {},
   pyright = {},
   rust_analyzer = {
     filetypes = { "rust" },
   },
   tsserver = {
-    filetypes = { 'typescript', 'javascript' }
+    filetypes = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' }
   },
-  html = { filetypes = { 'html', 'twig', 'hbs'} },
+  html = { filetypes = { 'html', 'twig', 'hbs' } },
   ltex = {
-     ltex = {
-        language = "fr-FR"  -- Override the ltex.language setting
-     }
+    language = "auto",     -- Override the ltex.language setting
+    completionEnabled = true,
+    additionalRules = {
+      enablePickyRules = true,
+    },
   },
   ansiblels = {},
+  ansible_lint = {
+    filetypes = { 'ansible.yaml' },
+  },
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
@@ -492,7 +497,7 @@ cmp.setup {
     { name = 'luasnip' },
     { name = 'path' },
     { name = 'buffer' },
-    { name = 'codeium' },
+    -- { name = 'codeium' },
   },
 }
 --Autoformat on write
@@ -527,3 +532,6 @@ require "user.options"
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
+-- Language tool
+vim.g.langtool_jar = '/home/a8taleb/languagetool/languagetool-commandline.jar'
