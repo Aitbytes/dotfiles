@@ -49,5 +49,7 @@ wal -n -i "$resized_path" \
 #&& sleep 0.05 \
 #&& polybar-msg cmd hide
 
-feh --bg-max "$resized_path"
+feh --bg-max --no-fehbg "$resized_path"
+
+rm "$resized_path"
 
