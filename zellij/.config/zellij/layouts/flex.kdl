@@ -3,7 +3,7 @@ layout {
         pane command="zsh"
         pane split_direction="vertical" {
             pane command="neofetch"
-            pane command="htop"
+            pane command="btop"
         }
     }
 }
