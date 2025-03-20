@@ -5,19 +5,21 @@ shape = "underline"
 size = 7.0
 
 [font.bold]
-family = "Jetbrainsmonoextrabold Nerd Font Mono"
+family = "0xProto Nerd Font Mono"
 style = "Bold"
 
 [font.italic]
-family = "Jetbrainsmono Nerd Font Mono"
+family = "0xProto Nerd Font Mono"
 style = "Italic"
 
 [font.normal]
-family = "Jetbrainsmono Nerd Font Mono"
+family = "0xProto Nerd Font Mono"
 style = "Regular"
 
-[shell]
+[terminal.shell]
 program = "/bin/zsh"
 
 [window]
 opacity = 0.7
+
+[terminal]
