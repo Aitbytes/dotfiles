@@ -6,7 +6,7 @@ return {
   opts = {
     provider = "openai",
     openai = {
-      model = "gpt-4o-mini",
+      model = "gpt-4o",
       -- Ensure you have set your OpenAI API key in the environment variable OPENAI_API_KEY
     },
   },
