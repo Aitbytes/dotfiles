@@ -1,0 +1,16 @@
+  [Unit]
+  Description=Rclone Mount %I
+  After=network.target
+
+  [Service]
+  ExecStartPre=/bin/mkdir -p /home/a8taleb/Remotes/%I
+  ExecStart=/usr/bin/rclone mount %I:/ /home/a8taleb/Remotes/%I --vfs-cache-mode writes --deamon --config=/home/a8taleb/.config/rclone/rclone.conf
+  ExecStop=/usr/bin/fusermount -uz /home/a8taleb/Remotes/%I
+  Restart=on-failure
+  User=yourusername
+  Group=yourusername
+  Type=notify
+
+  [Install]
+  WantedBy=multi-user.target
+
