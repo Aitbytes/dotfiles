@@ -21,6 +21,9 @@ super + shift + x
 # change_alacritty_opacity.sh
 super + shift + a
 	picom-switch-window-effect.sh
+
+ctrl + shift + m
+        xclip -selection clipboard -out | tr \\n \\r | xdotool type --clearmodifiers --delay 25 --file -
       
 super + Return
   alacritty -e zellij
