@@ -265,7 +265,9 @@ fi
 (cat ~/.cache/wal/sequences &)
 
 #Load fzf keybindings 
-source /usr/share/fzf/key-bindings.zsh
+if [ -f /usr/share/fzf/key-bindings.zsh ]; then
+    source /usr/share/fzf/key-bindings.zsh
+fi
 
 # Load aliases and shortcuts if existent.
 [ -f "$HOME/.config/shortcutrc" ] && source "$HOME/.config/shortcutrc"
