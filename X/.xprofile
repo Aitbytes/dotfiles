@@ -1,4 +1,4 @@
-export wallpapers=~/Pictures/Wallpapers
+export wallpapers=/home/a8taleb/Pictures/Wallpapers
 export PATH=$PATH:/home/a8taleb/.local/share/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/java-20-openjdk/bin:/usr/lib/jvm/java-17-openjdk/bin:/home/a8taleb/.local/bin:/opt/android-sdk/tools:/opt/android-sdk/tools/bin:/opt/flutter/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/usr/lib/rustup/bin:/home/a8taleb/bin
 
 
@@ -29,8 +29,8 @@ echo "executing xmodmap" >> ~/.xprofile.log
 echo "executing sxhkd" >> ~/.xprofile.log
 [[ -f ~/.config/sxhkd/sxhkdrc ]] && sxhkd & >> ~/.xprofile.log 2>&1
 echo "executing wal-set" >> ~/.xprofile.log
-[[ -f ~/.local/bin/wal-set.sh ]] && wal-set.sh $wallpapers >> ~/.xprofile.log 2>&1
-#picom & >> ~/.xprofile.log 2>&1
+[[ -f /home/a8taleb/.local/bin/wal-set.sh ]] && /home/a8taleb/.local/bin/wal-set.sh $wallpapers >> ~/.xprofile.log 2>&1
+picom & >> ~/.xprofile.log 2>&1
 [[ -f ~/.config/polybar/hack/launch.sh ]] && ~/.config/polybar/hack/launch.sh && sleep 0.05 && polybar-msg cmd hide
 
  #~/Scripts/wal/Scripts/update.sh $wallpapers && picom --experimental-backends &
