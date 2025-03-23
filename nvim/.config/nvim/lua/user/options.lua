@@ -6,7 +6,7 @@
 vim.o.hlsearch = false
 
 -- Make line numbers default
-vim.o.number = true
+vim.o.number = false
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
@@ -67,7 +67,7 @@ vim.o.foldmethod = "expr"
 vim.o.foldexpr = "nvim_treesitter#foldexpr()"
 
 --Set the default shell for the terminal
-vim.o.shell = '/bin/zsh'
+vim.o.shell = 'zsh'
 
 vim.g.terminal_emulator = "zsh"
 -- Options for float term
