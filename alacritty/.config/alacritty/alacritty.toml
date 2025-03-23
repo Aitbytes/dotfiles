@@ -2,7 +2,7 @@
 shape = "underline"
 
 [font]
-size = 7.0
+size = 10
 
 [font.bold]
 family = "Space Mono"
@@ -17,7 +17,7 @@ family = "Space Mono"
 style = "Regular"
 
 [terminal.shell]
-program = "/bin/zsh"
+program = "zsh"
 
 [window]
 opacity = 0.7
