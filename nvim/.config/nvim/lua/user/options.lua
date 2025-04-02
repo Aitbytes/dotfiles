@@ -6,7 +6,7 @@
 vim.o.hlsearch = false
 
 -- Make line numbers default
-vim.o.number = false
+vim.o.number = true
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
