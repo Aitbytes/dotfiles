@@ -17,7 +17,7 @@ family = "Space Mono"
 style = "Regular"
 
 [terminal.shell]
-program = "zsh"
+program = "zellij"
 
 [window]
 opacity = 0.7
