@@ -5,12 +5,13 @@ WALLPAPER_DIR=${WALLPAPER_DIR:-"$HOME/Pictures/Wallpapers"}
 HYPRPAPER_CONFIG="$HOME/.config/hypr/hyprpaper.conf"
 
 # Check if hyprpaper is running and kill it if it is
-if pgrep -x "hyprpaper" > /dev/null; then
-    pkill hyprpaper
-fi
 
 # Use sxiv to select wallpaper
 selected_wallpaper=$(sxiv -t -o -r "$WALLPAPER_DIR")
+
+if pgrep -x "hyprpaper" > /dev/null; then
+    pkill hyprpaper
+fi
 
 # Check if user selected a wallpaper
 if [ -n "$selected_wallpaper" ]; then
