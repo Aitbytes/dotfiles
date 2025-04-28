@@ -6,7 +6,7 @@ HYPRPAPER_CONFIG="$HOME/.config/hypr/hyprpaper.conf"
 
 # Check if hyprpaper is running and kill it if it is
 if pgrep -x "hyprpaper" > /dev/null; then
-    killall hyprpaper
+    pkill hyprpaper
 fi
 
 # Use sxiv to select wallpaper
