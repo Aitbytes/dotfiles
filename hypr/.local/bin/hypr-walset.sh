@@ -10,7 +10,7 @@ if pgrep -x "hyprpaper" > /dev/null; then
 fi
 
 # Use sxiv to select wallpaper
-selected_wallpaper=$(sxiv -t -o "$WALLPAPER_DIR")
+selected_wallpaper=$(sxiv -t -o -r "$WALLPAPER_DIR")
 
 # Check if user selected a wallpaper
 if [ -n "$selected_wallpaper" ]; then
