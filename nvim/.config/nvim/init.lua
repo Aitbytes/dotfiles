@@ -402,12 +402,12 @@ local servers = {
   rust_analyzer = {
     filetypes = { "rust" },
   },
-  tsserver = {
-    filetypes = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' }
-  },
+  -- tsserver = {
+  --   filetypes = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' }
+  -- },
   html = { filetypes = { 'html', 'twig', 'hbs' } },
   ltex = {
-    language = "auto",     -- Override the ltex.language setting
+    language = "auto", -- Override the ltex.language setting
     completionEnabled = true,
     additionalRules = {
       enablePickyRules = true,
