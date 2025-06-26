@@ -1,7 +1,8 @@
 return {
   "yetone/avante.nvim",
   event = "VeryLazy",
-  version = false, -- Never set this value to "*"! Never!
+  version = "v0.0.25",
+  -- commit = "87c4c6b4937d1884960759aba4a0e42645688f2f", -- Never set this value to "*"! Never!
   opts = {
     -- add any opts here
     -- for example
