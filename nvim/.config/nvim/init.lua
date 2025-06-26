@@ -414,9 +414,9 @@ local servers = {
     },
   },
   ansiblels = {},
-  ansible_lint = {
-    filetypes = { 'ansible.yaml' },
-  },
+  -- ansible_lint = {
+  --   filetypes = { 'ansible.yaml' },
+  -- },
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
