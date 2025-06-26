@@ -76,6 +76,12 @@ harpoon:setup()
 vim.keymap.set("n", "<leader>ha", function() harpoon:list():append() end, {silent = true, desc="Add to harpoon"})
 vim.keymap.set("n", "<leader>eh", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, {silent = true, desc="toggle harpoon menu"})
 
+-- Obsidian nvim
+
+vim.keymap.set({"n", "v"}, "<leader>os", ":ObsidianSearch<CR>", {silent = true, desc="Open Search "})
+vim.keymap.set({"n", "v"}, "<leader>ob", ":ObsidianBacklinks<CR>", {silent = true, desc="Open Backlinks "})
+
+
 -- Float Terminal
 -- vim.keymap.set("n","<leader>tt", ":FloatermNew<CR>", {silent = true, desc="Open floaterm"})
 -- vim.keymap.set("n","<leader>tf", ":FloatermToggle<CR>", {silent = true, desc="Toggle floaterm"})
