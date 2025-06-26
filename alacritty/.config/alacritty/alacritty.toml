@@ -5,15 +5,15 @@ shape = "underline"
 size = 10
 
 [font.bold]
-family = "Space Mono"
+family = "Monospace"
 style = "Bold"
 
 [font.italic]
-family = "Space Mono"
+family = "Monospace"
 style = "Italic"
 
 [font.normal]
-family = "Space Mono"
+family = "Monospace"
 style = "Regular"
 
 [terminal.shell]
