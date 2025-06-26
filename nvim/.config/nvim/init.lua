@@ -540,6 +540,7 @@ require "user.options"
 vim.g.langtool_jar = '/home/a8taleb/languagetool/languagetool-commandline.jar'
 require("avante").setup({
     mode = "legacy",
+    -- disabled_tools = { "replace_in_file" },
     -- system_prompt as function ensures LLM always has latest MCP server state
     -- This is evaluated for every message, even in existing chats
     -- system_prompt = function()
