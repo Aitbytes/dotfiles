@@ -538,3 +538,6 @@ require "user.options"
 --
 -- Language tool
 vim.g.langtool_jar = '/home/a8taleb/languagetool/languagetool-commandline.jar'
+require("avante").setup({
+    mode = "legacy",
+})
