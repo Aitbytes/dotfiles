@@ -500,6 +500,9 @@ cmp.setup {
     { name = 'luasnip' },
     { name = 'path' },
     { name = 'buffer' },
+    per_filetype = {
+    codecompanion = { "codecompanion" },
+  },
     -- { name = 'codeium' },
   },
 }
@@ -539,8 +542,8 @@ require "user.options"
 -- Language tool
 vim.g.langtool_jar = '/home/a8taleb/languagetool/languagetool-commandline.jar'
 require("avante").setup({
-    mode = "legacy",
-    -- disabled_tools = { "replace_in_file" },
+    -- mode = "legacy", -- Agent mode by default
+    disabled_tools = { "bash", "python", "create_dir"},
     -- system_prompt as function ensures LLM always has latest MCP server state
     -- This is evaluated for every message, even in existing chats
     system_prompt = function()
@@ -553,4 +556,17 @@ require("avante").setup({
             require("mcphub.extensions.avante").mcp_tool(),
         }
     end,
+})
+
+require("codecompanion").setup({
+  extensions = {
+    mcphub = {
+      callback = "mcphub.extensions.codecompanion",
+      opts = {
+        make_vars = true,
+        make_slash_commands = true,
+        show_result_in_chat = true
+      }
+    }
+  }
 })
