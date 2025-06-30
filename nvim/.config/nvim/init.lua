@@ -559,6 +559,17 @@ require("avante").setup({
 })
 
 require("codecompanion").setup({
+  strategies = {
+    chat = {
+      adapter = "gemini",
+    },
+    inline = {
+      adapter = "anthropic",
+    },
+    cmd = {
+      adapter = "anthropic",
+    }
+  },
   extensions = {
     mcphub = {
       callback = "mcphub.extensions.codecompanion",
