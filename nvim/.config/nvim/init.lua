@@ -542,8 +542,8 @@ require "user.options"
 -- Language tool
 vim.g.langtool_jar = '/home/a8taleb/languagetool/languagetool-commandline.jar'
 require("avante").setup({
-    -- mode = "legacy", -- Agent mode by default
-    disabled_tools = { "bash", "python", "create_dir"},
+    mode= "legacy", -- Agent mode by default
+    disabled_tools = { "python"},
     -- system_prompt as function ensures LLM always has latest MCP server state
     -- This is evaluated for every message, even in existing chats
     system_prompt = function()
@@ -561,7 +561,7 @@ require("avante").setup({
 require("codecompanion").setup({
   strategies = {
     chat = {
-      adapter = "gemini",
+      adapter = "anthropic",
     },
     inline = {
       adapter = "anthropic",
