@@ -3,11 +3,19 @@ return {
   event = "VeryLazy",
   version = "v0.0.25",
   -- commit = "87c4c6b4937d1884960759aba4a0e42645688f2f", -- Never set this value to "*"! Never!
+  web_search_engine = {
+    provider = "tavily", -- tavily, serpapi, searchapi, google, kagi, brave, or searxng
+    proxy = nil, -- proxy support, e.g., http://127.0.0.1:7890
+  },
   opts = {
     -- add any opts here
     -- for example
-    provider = "claude",
+    provider = "gemini",
     providers = {
+      gemini = {
+
+        model = "gemini-2.5-flash",
+      },
       claude = {
         endpoint = "https://api.anthropic.com",
         model = "claude-3-5-sonnet-20241022",
