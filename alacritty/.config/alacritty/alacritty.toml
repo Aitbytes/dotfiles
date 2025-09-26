@@ -1,3 +1,6 @@
+general.import = ["~/.config/alacritty/alacritty-colors.toml"]
+
+
 [cursor.style]
 shape = "underline"
 
