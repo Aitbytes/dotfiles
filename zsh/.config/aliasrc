@@ -16,3 +16,5 @@ alias nv='cd $HOME/.config/nvim'
 
 alias adb='HOME=/home/a8taleb/.local/share/android adb'
 alias mysql-workbench="mysql-workbench --configdir='$XDG_DATA_HOME/mysql/workbench'"
+
+alias v=nvim
