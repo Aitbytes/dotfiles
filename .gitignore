@@ -1,3 +1,4 @@
 rclone.conf
 gemini/.gemini/tmp
 gemini/.gemini
+hypr/.config/hypr/monitors.conf
