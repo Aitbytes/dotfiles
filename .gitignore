@@ -2,3 +2,4 @@ rclone.conf
 gemini/.gemini/tmp
 gemini/.gemini
 hypr/.config/hypr/monitors.conf
+nvim/.config/nvim/lua/custom/plugins/avante.lua.bak
