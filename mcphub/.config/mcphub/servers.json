@@ -1,10 +1,18 @@
 {
+  "nativeMCPServers": {
+    "mcphub": {
+      "disabled": true
+    },
+    "neovim": {
+      "disabled": false,
+      "disabled_tools": [
+        
+      ]
+    }
+  },
   "mcpServers": {
     "context7": {
       "url": "https://mcp.context7.com/mcp"
     }
-  },
-  "nativeMCPServers": [
-    
-  ]
+  }
 }
