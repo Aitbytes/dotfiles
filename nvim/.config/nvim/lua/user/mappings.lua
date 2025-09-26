@@ -20,11 +20,8 @@ vim.keymap.set('n', '<Space>eb', ":Neotree toggle show buffers right<CR>", { sil
 vim.keymap.set('n', '<Space>es', ":Neotree toggle float git-status", { silent = true, desc = "Toggle Neo-tree git"})
 vim.keymap.set('n', '<Space>eE', ":Neotree position=current<CR>", { silent = true, desc = "Toggle Neo-tree netrw style"})
 
---Split screen with terminal at the right
-vim.keymap.set({"n", "v"}, "<leader>et",":vsplit<CR><C-w>l:terminal<CR>a" , {silent = true, desc="Split screen with terminal at the right "})
 vim.keymap.set({"n", "v"}, "<leader>eg",":LazyGit<CR>" , {silent = true, desc="Open Lazygit"})
-
-
+--
 -- Navigate buffers
 vim.keymap.set("n", "<S-l>", ":bnext<CR>", {silent = true, desc=" "})
 vim.keymap.set("n", "<S-h>", ":bprevious<CR>", {silent = true, desc=" "})
@@ -98,8 +95,7 @@ vim.keymap.set({"n", "v"}, "<leader>ob", ":ObsidianBacklinks<CR>", {silent = tru
 vim.keymap.set("n", "<leader>tt", ":ToggleTerm<CR>", {silent = true, desc="Toggle terminal"})
 -- vim.keymap.set("", "<leader>tt", ":ToggleTerm<CR>", {silent = true, desc="Toggle terminal"})
 
-vim.keymap.set({"n", "v"}, "<leader><C-s>", ":split<CR>", {silent = true, desc="Split screen"})
-vim.keymap.set({"n", "v"}, '<leader><C-v>', ":vsplit<CR>", {silent = true, desc="Split screen vertical"})
+
 vim.keymap.set({"n", "v"}, '<leader>te', ":terminal<CR>", {silent = true, desc=""})
 -- vim.keymap.set("", "<leader>tt", ":ToggleTerm<CR>", {silent = true, desc="Toggle terminal"})
 --
