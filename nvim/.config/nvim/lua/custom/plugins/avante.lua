@@ -1,7 +1,6 @@
 return {
   "yetone/avante.nvim",
   event = "VeryLazy",
-  version = "v0.0.25",
   -- commit = "87c4c6b4937d1884960759aba4a0e42645688f2f", -- Never set this value to "*"! Never!
   web_search_engine = {
     provider = "tavily", -- tavily, serpapi, searchapi, google, kagi, brave, or searxng
@@ -24,7 +23,7 @@ return {
           temperature = 0,
           max_tokens = 4096,
         },
-        disable_tools = false, -- disable tools!
+        -- disable_tools = false, -- disable tools!
       },
       openai = {
         endpoint = "https://api.openai.com/v1",

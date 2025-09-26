@@ -98,6 +98,11 @@ vim.keymap.set({"n", "v"}, "<leader>ob", ":ObsidianBacklinks<CR>", {silent = tru
 vim.keymap.set("n", "<leader>tt", ":ToggleTerm<CR>", {silent = true, desc="Toggle terminal"})
 -- vim.keymap.set("", "<leader>tt", ":ToggleTerm<CR>", {silent = true, desc="Toggle terminal"})
 
+vim.keymap.set({"n", "v"}, "<leader><C-s>", ":split<CR>", {silent = true, desc="Split screen"})
+vim.keymap.set({"n", "v"}, '<leader><C-v>', ":vsplit<CR>", {silent = true, desc="Split screen vertical"})
+vim.keymap.set({"n", "v"}, '<leader>te', ":terminal<CR>", {silent = true, desc=""})
+-- vim.keymap.set("", "<leader>tt", ":ToggleTerm<CR>", {silent = true, desc="Toggle terminal"})
+--
 require"toggleterm".setup {
   size = 55,
   direction = "vertical"

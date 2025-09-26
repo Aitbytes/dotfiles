@@ -115,6 +115,35 @@ return {
 
 This will install the tree plugin and add the command `:Neotree` for you. You can explore the documentation at [neo-tree.nvim](https://github.com/nvim-neo-tree/neo-tree.nvim) for more information.
 
+### Personalization
+
+This configuration is built upon `kickstart.nvim` but has been significantly extended with custom plugins and settings to create a more personalized development environment.
+
+**Key Features & Plugins:**
+
+*   **AI & Coding Assistants**:
+    *   **[avante.nvim](https://github.com/yetone/avante.nvim)**: A powerful AI assistant.
+    *   **[codecompanion.nvim](https://github.com/olimorris/codecompanion.nvim)**: An AI tool for code interaction.
+
+*   **User Interface & Themes**:
+    *   **[tokyonight.nvim](https://github.com/folke/tokyonight.nvim)**: The default colorscheme.
+    *   **[neo-tree.nvim](https://github.com/nvim-neo-tree/neo-tree.nvim)**: A file explorer.
+    *   **[toggleterm.nvim](https://github.com/akinsho/toggleterm.nvim)**: For persistent terminal windows.
+
+*   **Debugging**:
+    *   A full debug adapter protocol setup with **[nvim-dap](https://github.com/mfussenegger/nvim-dap)**, **[nvim-dap-ui](https://github.com/rcarriga/nvim-dap-ui)**, and **[mason-nvim-dap.nvim](https://github.com/jay-babu/mason-nvim-dap.nvim)**.
+
+*   **Note Taking & Writing**:
+    *   **[obsidian.nvim](https://github.com/epwalsh/obsidian.nvim)**: For integration with Obsidian vaults.
+    *   **[ltex-utils.nvim](https://github.com/jhofscheier/ltex-utils.nvim)**: For advanced grammar checking with LTeX.
+
+*   **Workflow Enhancements**:
+    *   **[harpoon](https://github.com/ThePrimeagen/harpoon)**: For quick file marking and navigation.
+    *   **[lazygit.nvim](https://github.com/kdheepak/lazygit.nvim)**: A terminal UI for git.
+    *   **[nvim-surround](https://github.com/kylechui/nvim-surround)**: For managing surrounding characters.
+
+Custom keymaps for these plugins and general workflow improvements are defined in `lua/user/mappings.lua`.
+
 ### Contribution
 
 Pull-requests are welcome. The goal of this repo is not to create a Neovim configuration framework, but to offer a starting template that shows, by example, available features in Neovim. Some things that will not be included:
