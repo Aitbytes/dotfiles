@@ -269,6 +269,11 @@ if [ -f /usr/share/fzf/key-bindings.zsh ]; then
     source /usr/share/fzf/key-bindings.zsh
 fi
 
+
+
+# Load secret environment variables if the file exists.
+[ -f "$HOME/.config/secret-envs" ] && source "$HOME/.config/secret-envs"
+
 # Load aliases and shortcuts if existent.
 [ -f "$HOME/.config/shortcutrc" ] && source "$HOME/.config/shortcutrc"
 [ -f "$HOME/.config/aliasrc" ] && source "$HOME/.config/aliasrc"
@@ -525,3 +530,5 @@ _kubectl()
 if [ "$funcstack[1]" = "_kubectl" ]; then
     _kubectl
 fi
+
+
