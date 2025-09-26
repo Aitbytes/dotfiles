@@ -14,7 +14,7 @@ return {
     providers = {
       gemini = {
 
-        model = "gemini-2.5-flash",
+        model = "gemini-2.5-pro",
       },
       claude = {
         endpoint = "https://api.anthropic.com",
