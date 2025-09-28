@@ -49,9 +49,6 @@ vim.keymap.set("t", "<C-j>", "<C-\\><C-N><C-w>j", {silent = true, desc="Go down 
 vim.keymap.set("t", "<C-k>", "<C-\\><C-N><C-w>k", {silent = true, desc="Go up"})
 vim.keymap.set("t", "<C-l>", "<C-\\><C-N><C-w>l", {silent = true, desc="Go right "})
 
--- Set theme from wall
-vim.keymap.set({"n", "v"}, "<leader><C-w>", ":colorscheme pywal<CR>", {silent = true, desc="Get the colortheme from lushwal "})
---
 
 --Autoformat
 vim.keymap.set({"n", "v"}, "<leader>lf", vim.lsp.buf.format, {silent = true, desc="Format the file "})
@@ -103,5 +100,17 @@ require"toggleterm".setup {
   size = 55,
   direction = "vertical"
 }
+
+-- Toggle between colorschemes
+function ToggleColorScheme()
+  if vim.g.colors_name == "tokyonight-moon" then
+    vim.cmd.colorscheme "neopywal"
+  else
+    vim.cmd.colorscheme "tokyonight-moon"
+  end
+end
+
+
+vim.keymap.set("n", "<leader><C-w>", ToggleColorScheme, { silent = true, desc = "Toggle Colorscheme" })
 
 

@@ -1,1 +1,0 @@
-return { 'AlphaTechnolog/pywal.nvim' }

@@ -14,7 +14,14 @@ case "$mode" in
         selected_wallpaper=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" \) | shuf -n 1)
         ;;
     "select")
-        selected_wallpaper=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" \) | wofi --dmenu -p "Select Wallpaper")
+        image_list=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" \) -print0 | while IFS= read -r -d $'\0' image_path; do
+            filename=$(basename "$image_path")
+            echo "img:${image_path}:text:${filename}"
+        done)
+        full_selected_entry=$(echo -e "$image_list" | wofi --show dmenu --allow-images -p "Select Wallpaper")
+        if [ -n "$full_selected_entry" ]; then
+            selected_wallpaper=$(echo "$full_selected_entry" | sed -n 's/^img:\(.*\):text:.*$/\1/p')
+        fi
         ;;
     *)
         echo "Invalid argument: $1"
@@ -41,6 +48,6 @@ sed -i "s|wallpaper = .*|wallpaper = ,$selected_wallpaper|" "$HYPRPAPER_CONFIG"
 hyprpaper &
 
 # Apply colors with wallust
-wallust run "$selected_wallpaper"
+wallust run "$selected_wallpaper" && pywalfox update
 
 echo "Wallpaper set to $selected_wallpaper"
