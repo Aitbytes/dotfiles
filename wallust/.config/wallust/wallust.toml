@@ -2,3 +2,5 @@
 hyprland = { template = "hyprland.conf", target = "~/.config/hypr/hypr-colors.conf" }
 alacritty = { template = "alacritty.toml", target = "~/.config/alacritty/alacritty-colors.toml" }
 wofi = { template = "wofi.css", target = "~/.config/wofi/style.css" }
+neopywal = { template = "colors_neopywal.vim", target = "~/.cache/wal/colors-wal.vim" }
+pywalfox = { template = "colors.json", target = "~/.cache/wal/colors.json"}

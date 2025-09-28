@@ -528,8 +528,6 @@ require('ufo').setup({
   end
 })
 
-local pywal = require('pywal')
--- pywal.setup()
 
 
 -- Gets refactored configs
@@ -538,6 +536,10 @@ require "user.options"
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
+-- require("neopywal").setup({
+--     use_wallust = true,
+-- })
 --
 -- Language tool
 vim.g.langtool_jar = '/home/a8taleb/languagetool/languagetool-commandline.jar'
