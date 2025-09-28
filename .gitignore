@@ -5,3 +5,4 @@ hypr/.config/hypr/monitors.conf
 nvim/.config/nvim/lua/custom/plugins/avante.lua.bak
 alacritty/.config/alacritty/alacritty-colors.toml
 wofi/.config/wofi/style.css
+!gemini/.gemini/GEMINI.md
