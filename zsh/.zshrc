@@ -262,7 +262,7 @@ if [ -f /etc/zsh_command_not_found ]; then
 fi
 
 #take color scheme from wal
-(cat ~/.cache/wal/sequences &)
+#(cat ~/.cache/wal/sequences &)
 
 #Load fzf keybindings 
 if [ -f /usr/share/fzf/key-bindings.zsh ]; then
