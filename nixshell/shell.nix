@@ -22,6 +22,7 @@ pkgs.mkShell {
 
     # Vibe coding
     gemini-cli
+    opencode
 
 
     # Other Tools
@@ -34,6 +35,7 @@ pkgs.mkShell {
     languagetool
     nodemon
     pandoc
+    opentofu
 
     # Neovim Dependencies (LSPs, etc.)
     clang-tools # for clangd
@@ -45,6 +47,7 @@ pkgs.mkShell {
     nodePackages.vscode-langservers-extracted # for html, css, json, etc.
     lua53Packages.luarocks-nix
     lua51Packages.lua
+    python312Packages.hvac
 
     lua-language-server
     # texlive.combined.scheme-full # for vimtex. This is a large package and can be commented out to speed up shell activation.
@@ -56,6 +59,7 @@ pkgs.mkShell {
     fd
     unzip # for nvim-dap
   ];
+  
 
   shellHook = ''
     echo "Entered dotfiles development environment."
