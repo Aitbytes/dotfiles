@@ -24,6 +24,8 @@ pkgs.mkShell {
     gemini-cli
     opencode
 
+    pulumi
+
 
     # Other Tools
     stow
@@ -50,6 +52,8 @@ pkgs.mkShell {
     python312Packages.hvac
 
     lua-language-server
+    uv
+    pulumiPackages.pulumi-python
     # texlive.combined.scheme-full # for vimtex. This is a large package and can be commented out to speed up shell activation.
 
     # Build dependencies for plugins
