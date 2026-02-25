@@ -18,6 +18,13 @@ vim.api.nvim_set_keymap('n', '<C-h>', "<C-w>h", {  silent = true })
 vim.keymap.set('n', '<Space>ee', ":Neotree toggle<CR>", { silent = true, desc = "toogle Neo-tree"})
 vim.keymap.set('n', '<Space>eb', ":Neotree toggle show buffers right<CR>", { silent = true, desc = "Toggle Neo-tree buffers"})
 vim.keymap.set('n', '<Space>es', ":Neotree toggle float git-status", { silent = true, desc = "Toggle Neo-tree git"})
+
+-- Clipboard mappings for systems without clipboard support
+if vim.fn.has('clipboard') == 0 then
+  -- Copy to system clipboard using OSC 52
+  vim.keymap.set({'n', 'v'}, '<leader>y', function() require('osc52').copy_visual() end, { desc = "Copy to system clipboard" })
+  vim.keymap.set('n', '<leader>Y', function() require('osc52').copy_line() end, { desc = "Copy line to system clipboard" })
+end
 vim.keymap.set('n', '<Space>eE', ":Neotree position=current<CR>", { silent = true, desc = "Toggle Neo-tree netrw style"})
 
 vim.keymap.set({"n", "v"}, "<leader>eg",":LazyGit<CR>" , {silent = true, desc="Open Lazygit"})
@@ -52,6 +59,11 @@ vim.keymap.set("t", "<C-l>", "<C-\\><C-N><C-w>l", {silent = true, desc="Go right
 
 --Autoformat
 vim.keymap.set({"n", "v"}, "<leader>lf", vim.lsp.buf.format, {silent = true, desc="Format the file "})
+
+-- Toggle inlay hints
+vim.keymap.set("n", "<leader>lh", function()
+  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({}))
+end, {silent = true, desc="Toggle inlay hints"})
 
 
 -- Open LazyGit
@@ -103,10 +115,10 @@ require"toggleterm".setup {
 
 -- Toggle between colorschemes
 function ToggleColorScheme()
-  if vim.g.colors_name == "tokyonight-moon" then
+  if vim.g.colors_name == "catppuccin-macchiato" then
     vim.cmd.colorscheme "neopywal"
   else
-    vim.cmd.colorscheme "tokyonight-moon"
+    vim.cmd.colorscheme "catppuccin-macchiato"
   end
 end
 
