@@ -222,7 +222,7 @@ require('lazy').setup({
 
 -- Set the colorscheme
 
-vim.cmd.colorscheme 'tokyonight-moon'
+vim.cmd.colorscheme 'catppuccin-macchiato'
 
 -- [[Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -233,6 +233,16 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
   group = highlight_group,
   pattern = '*',
+})
+
+-- Enable inlay hints for Rust files
+vim.api.nvim_create_autocmd('LspAttach', {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client.name == 'rust-analyzer' then
+      vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+    end
+  end,
 })
 
 -- [[ Configure Telescope ]]
@@ -397,11 +407,14 @@ end
 --  define the property 'filetypes' to the map in question.
 local servers = {
   clangd = { filetypes = { "c", "cpp" } },
-  gopls = {},
-  pyright = {},
-  rust_analyzer = {
-    filetypes = { "rust" },
+  gopls = {
+    filetypes = { "go", "gomod", "gowork", "gotmpl" }
   },
+  json_lsp = {
+        filetypes = { "json" }
+         },
+  pyright = {},
+  -- rust_analyzer is handled by rustaceanvim
   -- tsserver = {
   --   filetypes = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' }
   -- },
@@ -440,17 +453,27 @@ local mason_lspconfig = require 'mason-lspconfig'
 
 mason_lspconfig.setup {
   ensure_installed = vim.tbl_keys(servers),
-}
+  handlers = {
+    function(server_name)
+      local config = {
+        capabilities = capabilities,
+        on_attach = on_attach,
+        settings = servers[server_name],
+        filetypes = (servers[server_name] or {}).filetypes,
+      }
 
-mason_lspconfig.setup {
-  function(server_name)
-    require('lspconfig')[server_name].setup {
-      capabilities = capabilities,
-      on_attach = on_attach,
-      settings = servers[server_name],
-      filetypes = (servers[server_name] or {}).filetypes,
-    }
-  end
+      -- Add root_dir configuration for gopls
+      if server_name == 'gopls' then
+        config.root_dir = function(fname)
+          local util = require('lspconfig.util')
+          return util.root_pattern('go.work', 'go.mod', '.git')(fname) or util.find_git_ancestor(fname) or
+              util.path.dirname(fname)
+        end
+      end
+
+      require('lspconfig')[server_name].setup(config)
+    end
+  }
 }
 
 -- [[ Configure nvim-cmp ]]
@@ -466,12 +489,16 @@ cmp.setup {
       luasnip.lsp_expand(args.body)
     end,
   },
+  completion = {
+    autocomplete = { cmp.TriggerEvent.TextChanged },
+  },
   mapping = cmp.mapping.preset.insert {
     ['<C-n>'] = cmp.mapping.select_next_item(),
     ['<C-p>'] = cmp.mapping.select_prev_item(),
     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete {},
+    ['<C-e>'] = cmp.mapping.abort(),
     ['<CR>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,
@@ -500,14 +527,34 @@ cmp.setup {
     { name = 'luasnip' },
     { name = 'path' },
     { name = 'buffer' },
-    per_filetype = {
-    codecompanion = { "codecompanion" },
-  },
     -- { name = 'codeium' },
+  },
+  per_filetype = {
+    codecompanion = { "codecompanion" },
   },
 }
 --Autoformat on write
 vim.cmd [[autocmd BufWritePre <buffer> Format]]
+
+-- Auto-trigger completion for Rust on . and ::
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'rust',
+  callback = function()
+    vim.keymap.set('i', '.', function()
+      vim.api.nvim_feedkeys('.', 'n', false)
+      require('cmp').complete()
+    end, { buffer = true, silent = true })
+    vim.keymap.set('i', ':', function()
+      vim.api.nvim_feedkeys(':', 'n', false)
+      -- Trigger completion only if previous char is also :
+      local line = vim.api.nvim_get_current_line()
+      local col = vim.api.nvim_win_get_cursor(0)[2]
+      if col >= 1 and line:sub(col, col) == ':' then
+        require('cmp').complete()
+      end
+    end, { buffer = true, silent = true })
+  end,
+})
 
 --Auto unfold on read
 -- vim.cmd [[autocmd BufReadPost,FileReadPost * normal zR]]
@@ -544,20 +591,20 @@ require "user.options"
 -- Language tool
 vim.g.langtool_jar = '/home/a8taleb/languagetool/languagetool-commandline.jar'
 require("avante").setup({
-    mode= "legacy", -- Agent mode by default
-    disabled_tools = { "python"},
-    -- system_prompt as function ensures LLM always has latest MCP server state
-    -- This is evaluated for every message, even in existing chats
-    system_prompt = function()
-        local hub = require("mcphub").get_hub_instance()
-        return hub and hub:get_active_servers_prompt() or ""
-    end,
-    -- Using function prevents requiring mcphub before it's loaded
-    custom_tools = function()
-        return {
-            require("mcphub.extensions.avante").mcp_tool(),
-        }
-    end,
+  mode = "legacy", -- Agent mode by default
+  disabled_tools = { "python" },
+  -- system_prompt as function ensures LLM always has latest MCP server state
+  -- This is evaluated for every message, even in existing chats
+  system_prompt = function()
+    local hub = require("mcphub").get_hub_instance()
+    return hub and hub:get_active_servers_prompt() or ""
+  end,
+  -- Using function prevents requiring mcphub before it's loaded
+  custom_tools = function()
+    return {
+      require("mcphub.extensions.avante").mcp_tool(),
+    }
+  end,
 })
 
 require("codecompanion").setup({
