@@ -9,7 +9,6 @@
       }
     }
   },
-  "theme": "opencode",
   "autoupdate": true,
   "share": "manual",
   "permission": {
@@ -25,14 +24,15 @@
     "glob": true,
     "grep": true,
     "list": true,
-    "webfetch": true
+    "webfetch": true,
+    "travel-geocoder*": false,
+    "travel-flight*": false,
+    "travel-hotel*": false,
+    "travel-event*": false,
+    "travel-weather*": false,
+    "travel-finance*": false
   },
-  "instructions": [
-    "CONTRIBUTING.md",
-    "README.md",
-    "*.md"
-  ],
-
+  "instructions": ["CONTRIBUTING.md", "README.md", "*.md"],
   "formatter": {
     "terraform": {
       "command": ["terraform", "fmt", "-"],
@@ -48,9 +48,6 @@
     }
   },
   "disabled_providers": [],
-  "tui": {
-    "scroll_speed": 3
-  },
   "mcp": {
     "context7": {
       "type": "local",
@@ -58,6 +55,30 @@
       "environment": {
         "DEFAULT_MINIMUM_TOKENS": ""
       }
+    },
+    "ddg-search": {
+      "type": "local",
+      "command": ["uvx", "duckduckgo-mcp-server"],
+      "enabled": false
+    },
+    "google-search": {
+      "type": "local",
+      "command": ["npx", "-y", "@adenot/mcp-google-search"],
+      "environment": {
+        "GOOGLE_SEARCH_ENGINE_ID": "{env:GOOGLE_SEARCH_ENGINE_ID}",
+        "GOOGLE_API_KEY": "{env:GOOGLE_API_KEY}"
+      },
+      "enabled": true
+    },
+    "paperless": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@nloui/paperless-mcp",
+        "https://paperless.aitbytes.fyi",
+        "4741262da2bfc9b7a7915bc0fe4966794cb7ec37"
+      ],
+      "enabled": false
     },
     "deepwiki": {
       "type": "remote",
@@ -80,7 +101,119 @@
     },
     "web-search": {
       "type": "remote",
-      "url": "http://localhost:3002/mcp"
+      "url": "http://localhost:3002/mcp",
+      "enabled": false
+    },
+    "travel-geocoder": {
+      "type": "local",
+      "command": [
+        "uv",
+        "--directory",
+        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/geocoder_server",
+        "run",
+        "python",
+        "geocoder_server.py"
+      ],
+      "enabled": false
+    },
+    "travel-flight": {
+      "type": "local",
+      "command": [
+        "uv",
+        "--directory",
+        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/flight_server",
+        "run",
+        "python",
+        "flight_server.py"
+      ],
+      "environment": {
+        "SERPAPI_KEY": "{env:SERPAPI_KEY}"
+      },
+      "enabled": false
+    },
+    "travel-hotel": {
+      "type": "local",
+      "command": [
+        "uv",
+        "--directory",
+        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/hotel_server",
+        "run",
+        "python",
+        "hotel_server.py"
+      ],
+      "environment": {
+        "SERPAPI_KEY": "{env:SERPAPI_KEY}"
+      },
+      "enabled": false
+    },
+    "travel-event": {
+      "type": "local",
+      "command": [
+        "uv",
+        "--directory",
+        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/event_server",
+        "run",
+        "python",
+        "event_server.py"
+      ],
+      "environment": {
+        "SERPAPI_KEY": "{env:SERPAPI_KEY}"
+      },
+      "enabled": false
+    },
+    "travel-weather": {
+      "type": "local",
+      "command": [
+        "uv",
+        "--directory",
+        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/weather_server",
+        "run",
+        "python",
+        "weather_server.py"
+      ],
+      "enabled": false
+    },
+    "travel-finance": {
+      "type": "local",
+      "command": [
+        "uv",
+        "--directory",
+        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/finance_server",
+        "run",
+        "python",
+        "finance_search_server.py"
+      ],
+      "environment": {
+        "SERPAPI_KEY": "{env:SERPAPI_KEY}"
+      },
+      "enabled": false
+    },
+    "arxiv": {
+      "type": "local",
+      "command": [
+        "uv",
+        "tool",
+        "run",
+        "arxiv-mcp-server",
+        "--storage-path",
+        "/tmp/arxiv-papers"
+      ],
+      "enabled": false
+    },
+    "youtube-transcript": {
+      "type": "local",
+      "command": ["npx", "-y", "@kimtaeyoon83/mcp-server-youtube-transcript"],
+      "enabled": false
+    },
+    "pymupdf4llm": {
+      "type": "local",
+      "command": ["uvx", "pymupdf4llm-mcp@latest", "stdio"],
+      "enabled": false
+    },
+    "wikidata": {
+      "type": "remote",
+      "url": "https://wd-mcp.wmcloud.org/mcp/",
+      "enabled": false
     }
   }
 }
