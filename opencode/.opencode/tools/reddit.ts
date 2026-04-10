@@ -12,12 +12,12 @@ export default tool({
     min_score: tool.schema.number().optional().describe("Minimum post score to include (default: 10)"),
     comments: tool.schema.number().optional().describe("Number of top comments per post (default: 10)"),
     min_comment_score: tool.schema.number().optional().describe("Minimum comment score (default: 1)"),
-    output: tool.schema.string().optional().describe("Output file path (default: <niche>_reddit_data.md)"),
+    output: tool.schema.string().optional().describe("Output file path (default: .reddit_data/<niche>_reddit_data.md next to the tool script)"),
     format: tool.schema.enum(["md", "json"]).optional().describe("Output format: md or json (default: md)"),
     sort: tool.schema.enum(["relevance", "new", "top", "comments"]).optional().describe("Reddit sort order (default: top)"),
   },
   async execute(args, context) {
-    const script = `${context.worktree}/opencode/.opencode/tools/reddit_scraper.py`
+    const script = `${import.meta.dir}/reddit_scraper.py`
     
     const cmdArgs = [`--niche`, args.niche]
     
@@ -33,7 +33,7 @@ export default tool({
     if (args.sort) cmdArgs.push(`--sort`, args.sort)
 
     try {
-      const result = await $`uv run --with praw python3 ${script} ${cmdArgs}`.text()
+      const result = await $`uv run --with praw --with python-dotenv python3 ${script} ${cmdArgs}`.text()
       return result
     } catch (e) {
       return `Error running reddit scraper: ${e.message}`

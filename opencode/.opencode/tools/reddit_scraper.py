@@ -233,7 +233,9 @@ def main():
     subreddits = args.subreddits or build_default_subreddits(niche)
     extra_terms = [t.strip() for t in args.terms.split(",")] if args.terms else []
     terms = [niche] + extra_terms
-    output_path = args.output or f"{niche.lower().replace(' ', '_')}_reddit_data.{args.format}"
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".reddit_data")
+    os.makedirs(data_dir, exist_ok=True)
+    output_path = args.output or os.path.join(data_dir, f"{niche.lower().replace(' ', '_')}_reddit_data.{args.format}")
 
     print(f"Reddit Scraper")
     print(f"  Niche     : {niche}")
