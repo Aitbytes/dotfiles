@@ -13,10 +13,7 @@ tools:
   todowrite: false
   todoread: true
   question: true
-  google-search_search: true
-  google-search_read_webpage: true
   webfetch: true
-  gh_grep_searchGitHub: true
   context7_resolve-library-id: true
   context7_query-docs: true
   skill: true

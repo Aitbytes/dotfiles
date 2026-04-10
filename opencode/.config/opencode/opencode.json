@@ -59,7 +59,7 @@
     "ddg-search": {
       "type": "local",
       "command": ["uvx", "duckduckgo-mcp-server"],
-      "enabled": false
+      "enabled": true
     },
     "google-search": {
       "type": "local",
@@ -83,7 +83,7 @@
     "deepwiki": {
       "type": "remote",
       "url": "https://mcp.deepwiki.com/sse",
-      "enabled": false
+      "enabled": true
     },
     "github": {
       "type": "local",
@@ -104,90 +104,6 @@
       "url": "http://localhost:3002/mcp",
       "enabled": false
     },
-    "travel-geocoder": {
-      "type": "local",
-      "command": [
-        "uv",
-        "--directory",
-        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/geocoder_server",
-        "run",
-        "python",
-        "geocoder_server.py"
-      ],
-      "enabled": false
-    },
-    "travel-flight": {
-      "type": "local",
-      "command": [
-        "uv",
-        "--directory",
-        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/flight_server",
-        "run",
-        "python",
-        "flight_server.py"
-      ],
-      "environment": {
-        "SERPAPI_KEY": "{env:SERPAPI_KEY}"
-      },
-      "enabled": false
-    },
-    "travel-hotel": {
-      "type": "local",
-      "command": [
-        "uv",
-        "--directory",
-        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/hotel_server",
-        "run",
-        "python",
-        "hotel_server.py"
-      ],
-      "environment": {
-        "SERPAPI_KEY": "{env:SERPAPI_KEY}"
-      },
-      "enabled": false
-    },
-    "travel-event": {
-      "type": "local",
-      "command": [
-        "uv",
-        "--directory",
-        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/event_server",
-        "run",
-        "python",
-        "event_server.py"
-      ],
-      "environment": {
-        "SERPAPI_KEY": "{env:SERPAPI_KEY}"
-      },
-      "enabled": false
-    },
-    "travel-weather": {
-      "type": "local",
-      "command": [
-        "uv",
-        "--directory",
-        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/weather_server",
-        "run",
-        "python",
-        "weather_server.py"
-      ],
-      "enabled": false
-    },
-    "travel-finance": {
-      "type": "local",
-      "command": [
-        "uv",
-        "--directory",
-        "/home/a8taleb/Documents/Travel/mcp_travelassistant/servers/finance_server",
-        "run",
-        "python",
-        "finance_search_server.py"
-      ],
-      "environment": {
-        "SERPAPI_KEY": "{env:SERPAPI_KEY}"
-      },
-      "enabled": false
-    },
     "arxiv": {
       "type": "local",
       "command": [
@@ -198,22 +114,22 @@
         "--storage-path",
         "/tmp/arxiv-papers"
       ],
-      "enabled": false
+      "enabled": true
     },
     "youtube-transcript": {
       "type": "local",
       "command": ["npx", "-y", "@kimtaeyoon83/mcp-server-youtube-transcript"],
-      "enabled": false
+      "enabled": true
     },
     "pymupdf4llm": {
       "type": "local",
       "command": ["uvx", "pymupdf4llm-mcp@latest", "stdio"],
-      "enabled": false
+      "enabled": true
     },
     "wikidata": {
       "type": "remote",
       "url": "https://wd-mcp.wmcloud.org/mcp/",
-      "enabled": false
+      "enabled": true
     }
   }
 }
