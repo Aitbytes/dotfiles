@@ -16,13 +16,9 @@ tools:
   google-search_search: true
   google-search_read_webpage: true
   webfetch: true
-  web_scrape: true
-  amazon_reviews: true
-  ddg-search_search: true
-  ddg-search_fetch_content: true
-  youtube_search: true
-  youtube-transcript_get_transcript: true
-  reddit_scrape: true
+  web_scraper: true
+    youtube: true
+  reddit: true
 permission:
   edit: allow
   bash: allow
@@ -62,9 +58,10 @@ Start by understanding the product category landscape. What are the top brands? 
 
 **Use these tools in parallel:**
 
-- `ddg-search_search`: "best [product] 2025 buying guide"
-- `reddit_scrape`: Find community consensus, common issues, real-world recommendations
-- `youtube_search`: Find review videos and product comparisons
+- `google-search_search`: "best [product] 2025 buying guide"
+- `reddit`: Find community consensus, common issues, real-world recommendations
+- `youtube(action="search")`: Find review videos and product comparisons
+- `youtube(action="transcript")`: Extract transcripts from review videos
 
 **Key questions to answer:**
 
@@ -78,10 +75,10 @@ Once you know what models to look for, search across multiple platforms.
 
 **Data sources to check:**
 
-- **Amazon:** Use `amazon_reviews` tool
+- **Amazon:** Use Playwright (`amazon.com` blocked — browser automation needed)
 - **AliExpress:** Use the free API (see below) for budget options
-- **French Retailers:** Use `ddg-search_search` for local options (see French Retailer Guide below)
-- **General Price Search:** `ddg-search_search` for price comparisons
+- **French Retailers:** Use `google-search_search` for local options (see French Retailer Guide below)
+- **General Price Search:** `google-search_search` for price comparisons
 
 **French Retailer Coverage:**
 
@@ -113,15 +110,15 @@ This is your differentiator. Get real user perspectives beyond retail reviews.
 
 **Reddit Research:**
 
-- Use `reddit_scrape` to find real user experiences
+- Use `reddit` to find real user experiences
 - Search for: "[product model] Reddit review", "[brand] vs [brand] Reddit"
 - Look for repeated themes across multiple threads
 - Flag: Reddit is anecdotal — verify factual claims elsewhere
 
 **YouTube Research:**
 
-- Use `youtube_search` to find review videos
-- Extract transcripts for detailed analysis
+- Use `youtube(action="search")` to find review videos
+- Use `youtube(action="transcript")` to extract transcripts for detailed analysis
 - Look for: comparison videos, long-term review videos, problem-focused content
 - Flag: YouTube reviews may be sponsored — cross-reference with Reddit
 
@@ -161,17 +158,17 @@ for product in data.get('results', [])[:10]:
 "
 ```
 
-### Fallback: Amazon Reviews Tool
+### Fallback: Amazon via Playwright
 
-```python
-amazon_reviews(search="wireless earbuds", pages=2)
+```bash
+playwright(amazon.com/product-url)
 ```
 
 ### Fallback: General Web Search
 
 ```bash
-ddg-search_search: "best wireless earbuds 2025 review"
-ddg-search_search: "buy laptop France delivery site:aliexpress.com OR site:amazon.fr"
+google-search_search: "best wireless earbuds 2025 review"
+google-search_search: "buy laptop France delivery site:aliexpress.com OR site:amazon.fr"
 ```
 
 ---

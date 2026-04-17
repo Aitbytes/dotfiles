@@ -186,7 +186,7 @@ npx @playwright/cli close
 **US/International:**
 | Site | Alternative |
 | --------------------------- | ------------------------- |
-| **amazon.com** | Use amazon_reviews tool |
+| **amazon.com** | Use Playwright browser automation |
 | **yelp.com** | Use trustpilot |
 | **g2.com** | No good alternative |
 | **walmart.com** | Use newegg/target |
