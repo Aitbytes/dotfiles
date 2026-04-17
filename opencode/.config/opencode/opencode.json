@@ -59,7 +59,7 @@
     "ddg-search": {
       "type": "local",
       "command": ["uvx", "duckduckgo-mcp-server"],
-      "enabled": true
+      "enabled": false
     },
     "google-search": {
       "type": "local",
@@ -119,7 +119,7 @@
     "youtube-transcript": {
       "type": "local",
       "command": ["npx", "-y", "@kimtaeyoon83/mcp-server-youtube-transcript"],
-      "enabled": true
+      "enabled": false
     },
     "pymupdf4llm": {
       "type": "local",
