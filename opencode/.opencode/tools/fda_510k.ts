@@ -1,6 +1,8 @@
 import { tool } from "@opencode-ai/plugin"
 import { $ } from "bun"
 
+const STRUCTURED_ERROR_RE = /^[A-Z_]+: .+ \(provider=.+, stage=.+\)$/s
+
 export default tool({
   description:
     "Search the FDA 510(k) medical device clearance database via the openFDA API. Returns device names, applicants, decision dates, product codes, and regulatory details. No API key required for basic use. Optionally set OPENFDA_API_KEY env var for higher rate limits.",
@@ -26,7 +28,7 @@ export default tool({
     output: tool.schema.string().optional().describe("Output file path (default: stdout)"),
   },
   async execute(args, context) {
-    const script = `${context.worktree}/opencode/.opencode/tools/fda_510k.py`
+    const script = `${import.meta.dir}/fda_510k.py`
 
     const cmdArgs: string[] = []
 
@@ -42,10 +44,10 @@ export default tool({
     if (args.output) cmdArgs.push("--output", args.output)
 
     try {
-      const result = await $`uv run --with requests python3 ${script} ${cmdArgs}`.text()
-      return result
-    } catch (e) {
-      return `Error running FDA 510(k) lookup: ${e.message}`
+      return await $`uv run --with requests python3 ${script} ${cmdArgs}`.text()
+    } catch (e: any) {
+      if (STRUCTURED_ERROR_RE.test(e.message)) throw new Error(e.message)
+      throw new Error(`Error running fda_510k: ${e.message}`)
     }
   },
 })

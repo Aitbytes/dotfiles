@@ -1,6 +1,8 @@
 import { tool } from "@opencode-ai/plugin"
 import { $ } from "bun"
 
+const STRUCTURED_ERROR_RE = /^[A-Z_]+: .+ \(provider=.+, stage=.+\)$/s
+
 export default tool({
   description: "Scrape Reddit posts and comments for a given topic. Returns collected posts in markdown or JSON format. Requires REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET environment variables.",
   args: {
@@ -18,9 +20,9 @@ export default tool({
   },
   async execute(args, context) {
     const script = `${import.meta.dir}/reddit_scraper.py`
-    
+
     const cmdArgs = [`--niche`, args.niche]
-    
+
     if (args.subreddits) cmdArgs.push(`--subreddits`, args.subreddits)
     if (args.terms) cmdArgs.push(`--terms`, args.terms)
     if (args.limit !== undefined) cmdArgs.push(`--limit`, String(args.limit))
@@ -33,10 +35,13 @@ export default tool({
     if (args.sort) cmdArgs.push(`--sort`, args.sort)
 
     try {
-      const result = await $`uv run --with praw --with python-dotenv python3 ${script} ${cmdArgs}`.text()
-      return result
-    } catch (e) {
-      return `Error running reddit scraper: ${e.message}`
+      const proc = $`uv run --with praw --with python-dotenv python3 ${script} ${cmdArgs}`
+      const stdout = await proc.text()
+      return stdout
+    } catch (e: any) {
+      const detail = e.stderr || e.stdout || e.message || String(e)
+      if (STRUCTURED_ERROR_RE.test(e.message)) throw new Error(e.message)
+      throw new Error(`Error running reddit: ${detail}\n[script=${script}]`)
     }
   },
 })
