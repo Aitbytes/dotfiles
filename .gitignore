@@ -8,3 +8,8 @@ wofi/.config/wofi/style.css
 !gemini/.gemini/GEMINI.md
 opencode/.opencode/tools/.reddit_data/
 **/__pycache__/
+**/*.swp
+**/*.bak
+.scripts/
+.playwright-cli/
+.playwright/
