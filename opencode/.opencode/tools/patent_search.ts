@@ -1,6 +1,8 @@
 import { tool } from "@opencode-ai/plugin"
 import { $ } from "bun"
 
+const STRUCTURED_ERROR_RE = /^[A-Z_]+: .+ \(provider=.+, stage=.+\)$/s
+
 export default tool({
   description:
     "Search patents by keyword, assignee, inventor, or patent number via Google Patents (no API key required). Returns patent numbers, titles, assignees, inventors, priority/filing/grant dates, and direct URLs. Covers US, EP, WO, and 100+ patent offices worldwide.",
@@ -14,7 +16,7 @@ export default tool({
       .optional()
       .describe("Specific patent number to look up (e.g. 'US10123456B2', 'EP1234567A1')"),
     assignee: tool.schema.string().optional().describe("Filter by assignee/company name (e.g. 'Atos Medical')"),
-    inventor: tool.schema.string().optional().describe("Filter by inventor name"),
+    inventor: tool.schema.string().optional().describe("Inventor name"),
     country: tool.schema
       .string()
       .optional()
@@ -26,7 +28,7 @@ export default tool({
     output: tool.schema.string().optional().describe("Output file path (default: stdout)"),
   },
   async execute(args, context) {
-    const script = `${context.worktree}/opencode/.opencode/tools/patent_search.py`
+    const script = `${import.meta.dir}/patent_search.py`
 
     const cmdArgs: string[] = []
 
@@ -42,10 +44,10 @@ export default tool({
     if (args.output) cmdArgs.push("--output", args.output)
 
     try {
-      const result = await $`uv run --with requests --with beautifulsoup4 --with lxml python3 ${script} ${cmdArgs}`.text()
-      return result
-    } catch (e) {
-      return `Error running patent search: ${e.message}`
+      return await $`uv run --with requests --with beautifulsoup4 --with lxml python3 ${script} ${cmdArgs}`.text()
+    } catch (e: any) {
+      if (STRUCTURED_ERROR_RE.test(e.message)) throw new Error(e.message)
+      throw new Error(`Error running patent_search: ${e.message}`)
     }
   },
 })

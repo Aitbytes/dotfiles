@@ -1,6 +1,8 @@
 import { tool } from "@opencode-ai/plugin"
 import { $ } from "bun"
 
+const STRUCTURED_ERROR_RE = /^[A-Z_]+: .+ \(provider=.+, stage=.+\)$/s
+
 export default tool({
   description:
     "Search EUDAMED, the European Database on Medical Devices (EU MDR/IVDR registry). Look up CE-marked devices, manufacturers, UDI codes, risk classifications, and regulatory status. No API key required — uses the public EUDAMED REST API.",
@@ -22,7 +24,7 @@ export default tool({
     output: tool.schema.string().optional().describe("Output file path (default: stdout)"),
   },
   async execute(args, context) {
-    const script = `${context.worktree}/opencode/.opencode/tools/eudamed_lookup.py`
+    const script = `${import.meta.dir}/eudamed_lookup.py`
 
     const cmdArgs: string[] = []
 
@@ -34,10 +36,10 @@ export default tool({
     if (args.output) cmdArgs.push("--output", args.output)
 
     try {
-      const result = await $`uv run --with requests python3 ${script} ${cmdArgs}`.text()
-      return result
-    } catch (e) {
-      return `Error running EUDAMED lookup: ${e.message}`
+      return await $`uv run --with requests python3 ${script} ${cmdArgs}`.text()
+    } catch (e: any) {
+      if (STRUCTURED_ERROR_RE.test(e.message)) throw new Error(e.message)
+      throw new Error(`Error running eudamed_lookup: ${e.message}`)
     }
   },
 })

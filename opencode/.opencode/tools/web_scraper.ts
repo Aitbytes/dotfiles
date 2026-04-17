@@ -1,6 +1,8 @@
 import { tool } from "@opencode-ai/plugin"
 import { $ } from "bun"
 
+const STRUCTURED_ERROR_RE = /^[A-Z_]+: .+ \(provider=.+, stage=.+\)$/s
+
 export default tool({
   description:
     "Fetch and extract content from any public URL. Supports plain text extraction, markdown conversion, link listing, and table extraction. Uses requests + BeautifulSoup under the hood. No API key required.",
@@ -27,7 +29,7 @@ export default tool({
       .describe("Maximum characters to return (default: 50000)"),
   },
   async execute(args, context) {
-    const script = `${context.worktree}/opencode/.opencode/tools/web_scraper.py`
+    const script = `${import.meta.dir}/web_scraper.py`
 
     const cmdArgs = ["--url", args.url]
 
@@ -40,11 +42,10 @@ export default tool({
     if (args.max_chars !== undefined) cmdArgs.push("--max-chars", String(args.max_chars))
 
     try {
-      const result =
-        await $`uv run --with requests --with beautifulsoup4 --with lxml python3 ${script} ${cmdArgs}`.text()
-      return result
-    } catch (e) {
-      return `Error running web scraper: ${e.message}`
+      return await $`uv run --with requests --with beautifulsoup4 --with lxml python3 ${script} ${cmdArgs}`.text()
+    } catch (e: any) {
+      if (STRUCTURED_ERROR_RE.test(e.message)) throw new Error(e.message)
+      throw new Error(`Error running web_scraper: ${e.message}`)
     }
   },
 })

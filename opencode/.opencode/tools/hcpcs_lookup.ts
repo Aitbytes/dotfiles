@@ -1,6 +1,8 @@
 import { tool } from "@opencode-ai/plugin"
 import { $ } from "bun"
 
+const STRUCTURED_ERROR_RE = /^[A-Z_]+: .+ \(provider=.+, stage=.+\)$/s
+
 export default tool({
   description:
     "Look up HCPCS Level II codes and Medicare Physician Fee Schedule (PFS) data. Searches CMS PFS dataset and FDA device classification. No API key required. Useful for finding reimbursement codes for medical devices, prosthetics, and procedures.",
@@ -22,7 +24,7 @@ export default tool({
     output: tool.schema.string().optional().describe("Output file path (default: stdout)"),
   },
   async execute(args, context) {
-    const script = `${context.worktree}/opencode/.opencode/tools/hcpcs_lookup.py`
+    const script = `${import.meta.dir}/hcpcs_lookup.py`
 
     const cmdArgs: string[] = []
 
@@ -34,10 +36,10 @@ export default tool({
     if (args.output) cmdArgs.push("--output", args.output)
 
     try {
-      const result = await $`uv run --with requests python3 ${script} ${cmdArgs}`.text()
-      return result
-    } catch (e) {
-      return `Error running HCPCS lookup: ${e.message}`
+      return await $`uv run --with requests python3 ${script} ${cmdArgs}`.text()
+    } catch (e: any) {
+      if (STRUCTURED_ERROR_RE.test(e.message)) throw new Error(e.message)
+      throw new Error(`Error running hcpcs_lookup: ${e.message}`)
     }
   },
 })

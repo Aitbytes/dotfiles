@@ -1,6 +1,8 @@
 import { tool } from "@opencode-ai/plugin"
 import { $ } from "bun"
 
+const STRUCTURED_ERROR_RE = /^[A-Z_]+: .+ \(provider=.+, stage=.+\)$/s
+
 export default tool({
   description:
     "Search for startup and funding data. Uses SEC EDGAR (free, no key) for Form D private placement filings and company search. Optionally uses Crunchbase API (requires CRUNCHBASE_API_KEY env var) for richer funding data including rounds, investors, and valuations.",
@@ -24,7 +26,7 @@ export default tool({
     output: tool.schema.string().optional().describe("Output file path (default: stdout)"),
   },
   async execute(args, context) {
-    const script = `${context.worktree}/opencode/.opencode/tools/startup_data.py`
+    const script = `${import.meta.dir}/startup_data.py`
 
     const cmdArgs: string[] = []
 
@@ -36,10 +38,10 @@ export default tool({
     if (args.output) cmdArgs.push("--output", args.output)
 
     try {
-      const result = await $`uv run --with requests python3 ${script} ${cmdArgs}`.text()
-      return result
-    } catch (e) {
-      return `Error running startup data lookup: ${e.message}`
+      return await $`uv run --with requests python3 ${script} ${cmdArgs}`.text()
+    } catch (e: any) {
+      if (STRUCTURED_ERROR_RE.test(e.message)) throw new Error(e.message)
+      throw new Error(`Error running startup_data: ${e.message}`)
     }
   },
 })
