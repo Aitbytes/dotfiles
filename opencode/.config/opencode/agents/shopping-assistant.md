@@ -16,13 +16,9 @@ tools:
   google-search_search: true
   google-search_read_webpage: true
   webfetch: true
-  web_scrape: true
-  amazon_reviews: true
-  ddg-search_search: true
-  ddg-search_fetch_content: true
-  youtube_search: true
-  youtube-transcript_get_transcript: true
-  reddit_scrape: true
+  web_scraper: true
+    youtube: true
+  reddit: true
 permission:
   edit: allow
   bash: allow
