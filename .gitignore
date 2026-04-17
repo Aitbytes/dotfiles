@@ -7,3 +7,4 @@ alacritty/.config/alacritty/alacritty-colors.toml
 wofi/.config/wofi/style.css
 !gemini/.gemini/GEMINI.md
 opencode/.opencode/tools/.reddit_data/
+**/__pycache__/
