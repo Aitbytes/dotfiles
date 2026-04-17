@@ -29,6 +29,14 @@ import sys
 import json
 import argparse
 import os
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared_runtime import (
+    ToolRuntimeError,
+    format_error,
+    request_json,
+)
+
 import requests
 
 BASE_URL = "https://api.fda.gov/device/510k.json"
@@ -65,15 +73,22 @@ def fetch_510k(search: str, limit: int, api_key: str | None) -> dict:
         params["api_key"] = api_key
 
     try:
-        resp = requests.get(BASE_URL, params=params, timeout=30)
-        if resp.status_code == 404:
+        data, _ = request_json(
+            "GET",
+            BASE_URL,
+            params=params,
+            timeout=30,
+            provider="openfda",
+            allowed_statuses={404},
+        )
+        if isinstance(data, dict) and not data.get("results"):
             return {"results": [], "meta": {"results": {"total": 0}}}
-        resp.raise_for_status()
-        return resp.json()
-    except requests.exceptions.HTTPError as e:
-        sys.exit(f"ERROR: HTTP {e.response.status_code} from openFDA — {e.response.text[:300]}")
-    except requests.exceptions.RequestException as e:
-        sys.exit(f"ERROR: {e}")
+        return data
+    except ToolRuntimeError as e:
+        if e.http_status == 404:
+            return {"results": [], "meta": {"results": {"total": 0}}}
+        print(f"ERROR: {format_error(e)}", file=sys.stderr)
+        sys.exit(1)
 
 
 def format_result_md(r: dict, index: int) -> str:

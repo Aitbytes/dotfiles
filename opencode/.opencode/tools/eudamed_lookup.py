@@ -9,7 +9,7 @@ Usage:
   python3 eudamed_lookup.py --query "voice prosthesis"
   python3 eudamed_lookup.py --query "laryngectomy" --limit 20
   python3 eudamed_lookup.py --manufacturer "Atos Medical" --limit 10
-  python3 eudamed_lookup.py --udi "00380740123456" 
+  python3 eudamed_lookup.py --udi "00380740123456"
   python3 eudamed_lookup.py --query "tracheoesophageal" --format json
 
 Options:
@@ -25,11 +25,13 @@ Docs: https://openregulatory.github.io/eudamed-api/
 """
 
 import sys
+import os
 import json
 import argparse
-import requests
 
-# EUDAMED base URL (unofficial REST API used by the EUDAMED web UI)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared_runtime import ToolRuntimeError, format_error, request_json
+
 EUDAMED_BASE = "https://ec.europa.eu/tools/eudamed/api"
 
 HEADERS = {
@@ -40,34 +42,25 @@ HEADERS = {
 
 
 def search_devices(query: str | None, manufacturer: str | None, limit: int) -> list[dict]:
-    """Search EUDAMED devices endpoint."""
     url = f"{EUDAMED_BASE}/devices/udiDiData"
     params: dict = {
         "lang": "en",
         "pageSize": min(limit, 50),
         "pageNumber": 1,
     }
-
     if query:
         params["keyword"] = query
     if manufacturer:
         params["actorName"] = manufacturer
 
     try:
-        resp = requests.get(url, params=params, headers=HEADERS, timeout=30)
-        if resp.status_code == 404:
-            return []
-        resp.raise_for_status()
-        data = resp.json()
-
-        # EUDAMED returns data in 'content' key
+        data, _ = request_json("GET", url, params=params, headers=HEADERS, provider="eudamed")
         items = data.get("content", data.get("data", []))
         if not isinstance(items, list):
             items = []
 
         results = []
         for item in items[:limit]:
-            # Extract nested fields
             risk_class_raw = item.get("riskClass", {})
             risk_class = risk_class_raw.get("code", "N/A").replace("refdata.risk-class.", "") if isinstance(risk_class_raw, dict) else str(risk_class_raw)
             status_raw = item.get("deviceStatusType", {})
@@ -88,13 +81,11 @@ def search_devices(query: str | None, manufacturer: str | None, limit: int) -> l
                 "url": f"https://ec.europa.eu/tools/eudamed/#/screen/search-device?lang=en&keyword={query or ''}",
             })
         return results
-    except requests.exceptions.RequestException as e:
-        print(f"  [EUDAMED devices] error: {e}", file=sys.stderr)
-        return []
+    except ToolRuntimeError:
+        raise
 
 
 def search_actors(manufacturer: str, limit: int) -> list[dict]:
-    """Search EUDAMED actors (manufacturers, importers, etc.)."""
     url = f"{EUDAMED_BASE}/actors"
     params: dict = {
         "lang": "en",
@@ -104,16 +95,7 @@ def search_actors(manufacturer: str, limit: int) -> list[dict]:
     }
 
     try:
-        resp = requests.get(url, params=params, headers=HEADERS, timeout=30)
-        if resp.status_code == 404:
-            return []
-        resp.raise_for_status()
-        if not resp.content or not resp.text.strip():
-            return []
-        try:
-            data = resp.json()
-        except Exception:
-            return []
+        data, _ = request_json("GET", url, params=params, headers=HEADERS, provider="eudamed")
         items = data.get("content", data.get("data", []))
         if not isinstance(items, list):
             items = []
@@ -130,42 +112,35 @@ def search_actors(manufacturer: str, limit: int) -> list[dict]:
                 "status": item.get("status", "N/A"),
             })
         return results
-    except requests.exceptions.RequestException as e:
-        print(f"  [EUDAMED actors] error: {e}", file=sys.stderr)
-        return []
+    except ToolRuntimeError:
+        raise
 
 
 def lookup_udi(udi: str) -> list[dict]:
-    """Look up a specific UDI-DI."""
     url = f"{EUDAMED_BASE}/devices/udiDiData/{udi}"
     params = {"lang": "en"}
 
     try:
-        resp = requests.get(url, params=params, headers=HEADERS, timeout=30)
-        if resp.status_code == 404:
-            return []
-        resp.raise_for_status()
-        item = resp.json()
-        risk_class_raw = item.get("riskClass", {})
+        data, _ = request_json("GET", url, params=params, headers=HEADERS, provider="eudamed")
+        risk_class_raw = data.get("riskClass", {})
         risk_class = risk_class_raw.get("code", "N/A").replace("refdata.risk-class.", "") if isinstance(risk_class_raw, dict) else str(risk_class_raw)
-        status_raw = item.get("deviceStatusType", {})
+        status_raw = data.get("deviceStatusType", {})
         status = status_raw.get("code", "N/A").replace("refdata.device-model-status.", "") if isinstance(status_raw, dict) else str(status_raw)
         return [{
             "source": "EUDAMED",
-            "udi_di": item.get("primaryDi", item.get("basicUdi", udi)),
-            "device_name": item.get("tradeName", item.get("deviceName", "N/A")),
-            "manufacturer": item.get("manufacturerName", item.get("actorName", "N/A")),
-            "model": item.get("deviceModel", item.get("modelNumber", "N/A")),
-            "catalogue_number": item.get("catalogueNumber", "N/A"),
-            "device_type": item.get("deviceType", "N/A"),
+            "udi_di": data.get("primaryDi", data.get("basicUdi", udi)),
+            "device_name": data.get("tradeName", data.get("deviceName", "N/A")),
+            "manufacturer": data.get("manufacturerName", data.get("actorName", "N/A")),
+            "model": data.get("deviceModel", data.get("modelNumber", "N/A")),
+            "catalogue_number": data.get("catalogueNumber", "N/A"),
+            "device_type": data.get("deviceType", "N/A"),
             "risk_class": risk_class,
             "status": status,
-            "country": item.get("countryCode", "N/A"),
-            "authorised_rep": item.get("authorisedRepresentativeName", "N/A"),
+            "country": data.get("countryCode", "N/A"),
+            "authorised_rep": data.get("authorisedRepresentativeName", "N/A"),
         }]
-    except requests.exceptions.RequestException as e:
-        print(f"  [EUDAMED UDI] error: {e}", file=sys.stderr)
-        return []
+    except ToolRuntimeError:
+        raise
 
 
 def format_md(results: list[dict], query: str) -> str:
@@ -238,15 +213,18 @@ def main():
 
     results: list[dict] = []
 
-    if args.udi:
-        print("  Looking up UDI...", file=sys.stderr)
-        results = lookup_udi(args.udi)
-    else:
-        print("  Searching devices...", file=sys.stderr)
-        results.extend(search_devices(args.query, args.manufacturer, args.limit))
-        if args.manufacturer:
-            print("  Searching actors...", file=sys.stderr)
-            results.extend(search_actors(args.manufacturer, args.limit))
+    try:
+        if args.udi:
+            print("  Looking up UDI...", file=sys.stderr)
+            results = lookup_udi(args.udi)
+        else:
+            print("  Searching devices...", file=sys.stderr)
+            results.extend(search_devices(args.query, args.manufacturer, args.limit))
+            if args.manufacturer:
+                print("  Searching actors...", file=sys.stderr)
+                results.extend(search_actors(args.manufacturer, args.limit))
+    except ToolRuntimeError as e:
+        sys.exit(format_error(e))
 
     print(f"  Found : {len(results)} results", file=sys.stderr)
 
