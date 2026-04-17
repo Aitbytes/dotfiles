@@ -29,11 +29,14 @@ No API key required.
 """
 
 import sys
+import os
 import json
 import argparse
 import csv
 import io
-import requests
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared_runtime import ToolRuntimeError, format_error, request_text
 
 GOOGLE_PATENTS_XHR = "https://patents.google.com/xhr/query"
 
@@ -47,9 +50,7 @@ HEADERS = {
 def build_google_patents_url(query: str, assignee: str | None, inventor: str | None,
                               country: str | None, date_from: str | None,
                               date_to: str | None, limit: int) -> str:
-    """Build the Google Patents search URL parameters."""
     parts = []
-
     if query:
         parts.append(query)
     if assignee:
@@ -58,7 +59,6 @@ def build_google_patents_url(query: str, assignee: str | None, inventor: str | N
         parts.append(f'inventor:"{inventor}"')
 
     q = "+".join(p.replace(" ", "+") for p in parts)
-
     url_parts = [f"q={q}"]
 
     if date_from:
@@ -74,9 +74,7 @@ def build_google_patents_url(query: str, assignee: str | None, inventor: str | N
 def search_google_patents(query: str, assignee: str | None, inventor: str | None,
                            country: str | None, date_from: str | None,
                            date_to: str | None, limit: int) -> list[dict]:
-    """Search Google Patents via the CSV export XHR endpoint."""
     url_params = build_google_patents_url(query, assignee, inventor, country, date_from, date_to, limit)
-
     params = {
         "url": url_params,
         "exp": "",
@@ -84,17 +82,12 @@ def search_google_patents(query: str, assignee: str | None, inventor: str | None
     }
 
     try:
-        resp = requests.get(GOOGLE_PATENTS_XHR, params=params, headers=HEADERS, timeout=30)
-        resp.raise_for_status()
-        text = resp.text
-
-        # Response starts with a comment line then CSV
+        text, _ = request_text("GET", GOOGLE_PATENTS_XHR, params=params, headers=HEADERS, provider="patent_search", proxy_mode="direct")
         lines = text.strip().splitlines()
-        # Skip comment lines (start with #) and find the CSV header
         csv_lines = []
         for line in lines:
             if line.startswith("search URL:,"):
-                continue  # skip the search URL line
+                continue
             csv_lines.append(line)
 
         if not csv_lines:
@@ -118,26 +111,18 @@ def search_google_patents(query: str, assignee: str | None, inventor: str | None
                 "url": row.get("result link", "N/A"),
             })
         return results
-
-    except requests.exceptions.RequestException as e:
-        print(f"  [Google Patents] error: {e}", file=sys.stderr)
-        return []
+    except ToolRuntimeError:
+        raise
 
 
 def fetch_patent_by_number(patent_number: str) -> list[dict]:
-    """Fetch a specific patent by number from Google Patents."""
-    # Normalize patent number (remove hyphens for URL)
     pn_clean = patent_number.replace("-", "")
     url = f"https://patents.google.com/patent/{pn_clean}/en"
 
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=30)
-        if resp.status_code == 404:
-            return []
-        resp.raise_for_status()
-
+        text, _ = request_text("GET", url, headers=HEADERS, provider="patent_search", proxy_mode="direct")
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(resp.content, "lxml")
+        soup = BeautifulSoup(text, "lxml")
 
         title_el = soup.find("span", {"itemprop": "title"})
         title = title_el.get_text(strip=True) if title_el else "N/A"
@@ -154,15 +139,8 @@ def fetch_patent_by_number(patent_number: str) -> list[dict]:
             "abstract": abstract,
             "url": url,
         }]
-    except Exception as e:
-        print(f"  [Google Patents] lookup error: {e}", file=sys.stderr)
-        # Return a minimal result with just the URL
-        return [{
-            "source": "Google Patents",
-            "patent_number": patent_number,
-            "title": "N/A (fetch failed)",
-            "url": f"https://patents.google.com/patent/{patent_number.replace('-', '')}/en",
-        }]
+    except ToolRuntimeError:
+        raise
 
 
 def format_md(results: list[dict], query: str) -> str:
@@ -225,20 +203,23 @@ def main():
 
     results: list[dict] = []
 
-    if args.patent_number:
-        print("  Fetching specific patent...", file=sys.stderr)
-        results = fetch_patent_by_number(args.patent_number)
-    else:
-        print("  Searching Google Patents...", file=sys.stderr)
-        results = search_google_patents(
-            args.query or "",
-            args.assignee,
-            args.inventor,
-            args.country,
-            args.date_from,
-            args.date_to,
-            args.limit,
-        )
+    try:
+        if args.patent_number:
+            print("  Fetching specific patent...", file=sys.stderr)
+            results = fetch_patent_by_number(args.patent_number)
+        else:
+            print("  Searching Google Patents...", file=sys.stderr)
+            results = search_google_patents(
+                args.query or "",
+                args.assignee,
+                args.inventor,
+                args.country,
+                args.date_from,
+                args.date_to,
+                args.limit,
+            )
+    except ToolRuntimeError as e:
+        sys.exit(format_error(e))
 
     print(f"  Found : {len(results)} results", file=sys.stderr)
 

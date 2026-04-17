@@ -28,19 +28,18 @@ Notes:
 """
 
 import sys
+import os
 import json
 import argparse
-import requests
 
-# NLM Clinical Tables HCPCS API (free, no key required)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared_runtime import ToolRuntimeError, format_error, request_json, request_with_retries
+
 NLM_HCPCS_URL = "https://clinicaltables.nlm.nih.gov/api/hcpcs/v3/search"
-
-# openFDA device classification (for regulatory context)
 OPENFDA_DEVICE_URL = "https://api.fda.gov/device/classification.json"
 
 
 def search_nlm_hcpcs(query: str | None, code: str | None, limit: int) -> list[dict]:
-    """Search HCPCS codes via NLM Clinical Tables API (free, no key)."""
     term = code.upper() if code else (query or "")
     params: dict = {
         "terms": term,
@@ -49,13 +48,9 @@ def search_nlm_hcpcs(query: str | None, code: str | None, limit: int) -> list[di
     }
 
     try:
-        resp = requests.get(NLM_HCPCS_URL, params=params, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
-        # Response: [total, [codes], null, [[code, display], ...]]
+        data, _ = request_json("GET", NLM_HCPCS_URL, params=params, provider="hcpcs")
         if not isinstance(data, list) or len(data) < 4:
             return []
-        total = data[0]
         rows = data[3] or []
         results = []
         for row in rows:
@@ -72,29 +67,30 @@ def search_nlm_hcpcs(query: str | None, code: str | None, limit: int) -> list[di
                 "non_fac_price": "N/A",
                 "fac_price": "N/A",
                 "global_days": "N/A",
-                "cms_lookup_url": f"https://www.cms.gov/medicare/physician-fee-schedule/search/overview",
+                "cms_lookup_url": "https://www.cms.gov/medicare/physician-fee-schedule/search/overview",
             })
         return results
-    except requests.exceptions.RequestException as e:
-        print(f"  [NLM HCPCS] error: {e}", file=sys.stderr)
-        return []
+    except ToolRuntimeError:
+        raise
 
 
 def search_openfda_device_class(query: str | None, code: str | None, limit: int) -> list[dict]:
-    """Search FDA device classification for context on device codes."""
     params: dict = {"limit": min(limit, 100)}
-
     if code:
         params["search"] = f"product_code:{code}"
     elif query:
         params["search"] = query
 
     try:
-        resp = requests.get(OPENFDA_DEVICE_URL, params=params, timeout=30)
-        if resp.status_code == 404:
+        result = request_with_retries(
+            "GET", OPENFDA_DEVICE_URL,
+            params=params,
+            allowed_statuses=[404],
+            provider="hcpcs",
+        )
+        if result.response.status_code == 404:
             return []
-        resp.raise_for_status()
-        data = resp.json()
+        data, _ = request_json("GET", OPENFDA_DEVICE_URL, params=params, provider="hcpcs")
         results = []
         for row in data.get("results", []):
             results.append({
@@ -108,9 +104,8 @@ def search_openfda_device_class(query: str | None, code: str | None, limit: int)
                 "definition": row.get("definition", "N/A")[:300],
             })
         return results
-    except requests.exceptions.RequestException as e:
-        print(f"  [FDA Classification] error: {e}", file=sys.stderr)
-        return []
+    except ToolRuntimeError:
+        raise
 
 
 def format_md(results: list[dict], query: str) -> str:
@@ -182,13 +177,16 @@ def main():
 
     results: list[dict] = []
 
-    if args.source in ("cms", "both"):
-        print("  Querying NLM HCPCS...", file=sys.stderr)
-        results.extend(search_nlm_hcpcs(args.search, args.code, args.limit))
+    try:
+        if args.source in ("cms", "both"):
+            print("  Querying NLM HCPCS...", file=sys.stderr)
+            results.extend(search_nlm_hcpcs(args.search, args.code, args.limit))
 
-    if args.source in ("fda", "both"):
-        print("  Querying FDA Device Classification...", file=sys.stderr)
-        results.extend(search_openfda_device_class(args.search, args.code, args.limit))
+        if args.source in ("fda", "both"):
+            print("  Querying FDA Device Classification...", file=sys.stderr)
+            results.extend(search_openfda_device_class(args.search, args.code, args.limit))
+    except ToolRuntimeError as e:
+        sys.exit(format_error(e))
 
     print(f"  Found : {len(results)} results", file=sys.stderr)
 

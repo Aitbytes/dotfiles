@@ -26,17 +26,17 @@ Environment variables:
 """
 
 import sys
+import os
 import json
 import argparse
-import os
-import requests
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared_runtime import ToolRuntimeError, format_error, request_json
+
+EDGAR_SEARCH_URL = "https://efts.sec.gov/LATEST/search-index"
 
 
 def search_edgar_full_text(query: str, limit: int) -> list[dict]:
-    """Search SEC EDGAR full-text search API (free, no key)."""
-    url = "https://efts.sec.gov/LATEST/search-index?q={}&dateRange=custom&startdt=2010-01-01&forms=D"
-    # Use EDGAR EFTS full-text search
-    search_url = "https://efts.sec.gov/LATEST/search-index"
     q_terms = " AND ".join(f'"{w}"' for w in query.split()) if " " in query else f'"{query}"'
     params = {
         "q": q_terms,
@@ -47,14 +47,11 @@ def search_edgar_full_text(query: str, limit: int) -> list[dict]:
     headers = {"User-Agent": "research-agent/1.0 (research@example.com)"}
 
     try:
-        resp = requests.get(search_url, params=params, headers=headers, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
+        data, _ = request_json("GET", EDGAR_SEARCH_URL, params=params, headers=headers, provider="startup_data")
         hits = data.get("hits", {}).get("hits", [])[:limit]
         results = []
         for hit in hits:
             src = hit.get("_source", {})
-            # display_names is a list like ["COMPANY NAME  (CIK 0000123456)"]
             display_names = src.get("display_names", [])
             company = display_names[0].split("(CIK")[0].strip() if display_names else "N/A"
             ciks = src.get("ciks", [])
@@ -70,14 +67,11 @@ def search_edgar_full_text(query: str, limit: int) -> list[dict]:
                 "filing_url": f"https://www.sec.gov/Archives/edgar/data/{cik.lstrip('0')}/{adsh.replace('-','')}/{adsh}-index.htm" if adsh else f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=D&dateb=&owner=include&count=40",
             })
         return results
-    except requests.exceptions.RequestException as e:
-        print(f"  [EDGAR EFTS] error: {e}", file=sys.stderr)
-        return []
+    except ToolRuntimeError:
+        raise
 
 
 def search_edgar_company(company: str, limit: int) -> list[dict]:
-    """Search SEC EDGAR company search API (free, no key)."""
-    url = "https://efts.sec.gov/LATEST/search-index"
     params = {
         "q": f'"{company}"',
         "forms": "D,10-K,S-1",
@@ -85,9 +79,7 @@ def search_edgar_company(company: str, limit: int) -> list[dict]:
     headers = {"User-Agent": "research-agent/1.0 (research@example.com)"}
 
     try:
-        resp = requests.get(url, params=params, headers=headers, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
+        data, _ = request_json("GET", EDGAR_SEARCH_URL, params=params, headers=headers, provider="startup_data")
         hits = data.get("hits", {}).get("hits", [])[:limit]
         results = []
         for hit in hits:
@@ -107,13 +99,11 @@ def search_edgar_company(company: str, limit: int) -> list[dict]:
                 "description": src.get("file_description", src.get("period_ending", "")),
             })
         return results
-    except requests.exceptions.RequestException as e:
-        print(f"  [EDGAR company] error: {e}", file=sys.stderr)
-        return []
+    except ToolRuntimeError:
+        raise
 
 
 def search_crunchbase(query: str, api_key: str, limit: int) -> list[dict]:
-    """Search Crunchbase for companies (requires API key)."""
     url = "https://api.crunchbase.com/api/v4/searches/organizations"
     headers = {"X-cb-user-key": api_key, "Content-Type": "application/json"}
     payload = {
@@ -133,8 +123,6 @@ def search_crunchbase(query: str, api_key: str, limit: int) -> list[dict]:
         ],
         "limit": limit,
     }
-
-    # Add name search if query provided
     if query:
         payload["query"].append({
             "type": "predicate",
@@ -144,13 +132,11 @@ def search_crunchbase(query: str, api_key: str, limit: int) -> list[dict]:
         })
 
     try:
-        resp = requests.post(url, headers=headers, json=payload, timeout=30)
-        if resp.status_code == 401:
+        data, result = request_json("POST", url, headers=headers, json_body=payload, provider="startup_data")
+        if result.response.status_code == 401:
             sys.exit("ERROR: CRUNCHBASE_API_KEY is invalid or expired.")
-        if resp.status_code == 402:
+        if result.response.status_code == 402:
             sys.exit("ERROR: Crunchbase API requires a paid plan for this endpoint.")
-        resp.raise_for_status()
-        data = resp.json()
         entities = data.get("entities", [])
         results = []
         for entity in entities:
@@ -174,9 +160,8 @@ def search_crunchbase(query: str, api_key: str, limit: int) -> list[dict]:
                 ),
             })
         return results
-    except requests.exceptions.RequestException as e:
-        print(f"  [Crunchbase] error: {e}", file=sys.stderr)
-        return []
+    except ToolRuntimeError:
+        raise
 
 
 def format_md(results: list[dict], query: str) -> str:
@@ -253,16 +238,19 @@ def main():
 
     results: list[dict] = []
 
-    if args.source in ("edgar", "both"):
-        print("  Querying SEC EDGAR...", file=sys.stderr)
-        if args.company:
-            results.extend(search_edgar_company(args.company, args.limit))
-        else:
-            results.extend(search_edgar_full_text(args.query or "", args.limit))
+    try:
+        if args.source in ("edgar", "both"):
+            print("  Querying SEC EDGAR...", file=sys.stderr)
+            if args.company:
+                results.extend(search_edgar_company(args.company, args.limit))
+            else:
+                results.extend(search_edgar_full_text(args.query or "", args.limit))
 
-    if args.source in ("crunchbase", "both") and crunchbase_key:
-        print("  Querying Crunchbase...", file=sys.stderr)
-        results.extend(search_crunchbase(args.company or args.query or "", crunchbase_key, args.limit))
+        if args.source in ("crunchbase", "both") and crunchbase_key:
+            print("  Querying Crunchbase...", file=sys.stderr)
+            results.extend(search_crunchbase(args.company or args.query or "", crunchbase_key, args.limit))
+    except ToolRuntimeError as e:
+        sys.exit(format_error(e))
 
     print(f"  Found : {len(results)} results", file=sys.stderr)
 

@@ -30,16 +30,17 @@ import sys
 import time
 import json
 import argparse
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared_runtime import ToolRuntimeError, format_error, create_error
+
 import praw
 import praw.exceptions
+import prawcore.exceptions
 import requests.exceptions
 from dotenv import load_dotenv
 
 load_dotenv()
-
-# ---------------------------------------------------------------------------
-# Rate-limiting helpers
-# ---------------------------------------------------------------------------
 
 REQUEST_DELAY = 1.0
 MAX_RETRIES = 5
@@ -55,29 +56,99 @@ def _sleep(seconds: float, reason: str = ""):
 
 def with_backoff(fn, *args, **kwargs):
     delay = 1.0
+    last_error: Exception | None = None
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             result = fn(*args, **kwargs)
             _sleep(REQUEST_DELAY)
             return result
+        except prawcore.exceptions.NotFound as e:
+            raise create_error(
+                "not_found",
+                f"Reddit resource not found: {e}",
+                stage="reddit_api",
+                provider="reddit",
+                retriable=False,
+                http_status=e.response.status_code if hasattr(e, "response") else 404,
+                details={"exception": "NotFound"},
+            )
+        except prawcore.exceptions.Forbidden as e:
+            raise create_error(
+                "forbidden",
+                f"Reddit access denied: {e}",
+                stage="reddit_api",
+                provider="reddit",
+                retriable=False,
+                http_status=e.response.status_code if hasattr(e, "response") else 403,
+                details={"exception": "Forbidden"},
+            )
+        except prawcore.exceptions.Redirect as e:
+            raise create_error(
+                "redirect",
+                f"Reddit unexpected redirect: {e}",
+                stage="reddit_api",
+                provider="reddit",
+                retriable=False,
+                http_status=e.response.status_code if hasattr(e, "response") else 302,
+                details={"exception": "Redirect"},
+            )
+        except prawcore.exceptions.ServerError as e:
+            last_error = e
+            print(f"  [server]     attempt {attempt}/{MAX_RETRIES}: {e}")
+            if attempt == MAX_RETRIES:
+                break
+            _sleep(min(delay, MAX_BACKOFF), "server error – backoff")
+            delay *= 2
+        except prawcore.exceptions.ResponseException as e:
+            last_error = e
+            print(f"  [prawcore]   attempt {attempt}/{MAX_RETRIES}: {e}")
+            if attempt == MAX_RETRIES:
+                break
+            _sleep(min(delay, MAX_BACKOFF), "prawcore response error – backoff")
+            delay *= 2
         except praw.exceptions.RedditAPIException as e:
+            last_error = e
             print(f"  [reddit-api] attempt {attempt}/{MAX_RETRIES}: {e}")
             if attempt == MAX_RETRIES:
-                raise
+                break
             _sleep(min(delay, MAX_BACKOFF), "Reddit API error – backoff")
             delay *= 2
-        except requests.exceptions.Timeout:
+        except requests.exceptions.Timeout as e:
+            last_error = e
             print(f"  [timeout]    attempt {attempt}/{MAX_RETRIES}")
             if attempt == MAX_RETRIES:
-                raise
+                break
             _sleep(TIMEOUT_RETRY_DELAY, "timeout – retrying")
         except requests.exceptions.RequestException as e:
+            last_error = e
             print(f"  [network]    attempt {attempt}/{MAX_RETRIES}: {e}")
             if attempt == MAX_RETRIES:
-                raise
+                break
             _sleep(min(delay, MAX_BACKOFF), "network error – backoff")
             delay *= 2
-    return None
+
+    if last_error is None:
+        raise create_error(
+            "upstream_error",
+            "Max retries exceeded with no error recorded",
+            stage="reddit_api",
+            provider="reddit",
+            retriable=False,
+        )
+
+    err_str = str(last_error)
+    retriable = isinstance(last_error, (requests.exceptions.Timeout, requests.exceptions.ConnectionError))
+    if isinstance(last_error, (praw.exceptions.RedditAPIException, prawcore.exceptions.ServerError, prawcore.exceptions.ResponseException)):
+        retriable = True
+
+    raise create_error(
+        "upstream_error",
+        f"Reddit API failed after {MAX_RETRIES} attempts: {err_str}",
+        stage="reddit_api",
+        provider="reddit",
+        retriable=retriable,
+        details={"exception": last_error.__class__.__name__},
+    )
 
 
 def init_reddit() -> praw.Reddit:
@@ -86,9 +157,12 @@ def init_reddit() -> praw.Reddit:
     user_agent = os.getenv("REDDIT_USER_AGENT", "research-agent/1.0 (by /u/researcher)")
 
     if not client_id or not client_secret:
-        sys.exit(
-            "ERROR: REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET not set.\n"
-            "Set these in your environment or .env file."
+        raise create_error(
+            "auth_required",
+            "REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET not set",
+            stage="init",
+            provider="reddit",
+            retriable=False,
         )
 
     return praw.Reddit(
@@ -103,11 +177,7 @@ def fetch_comments(post, max_comments: int, min_score: int) -> list[dict]:
         post.comments.replace_more(limit=0)
         return post.comments.list()
 
-    try:
-        all_comments = with_backoff(_load)
-    except Exception as e:
-        print(f"  [comments] failed to load comments: {e}")
-        return []
+    all_comments = with_backoff(_load)
 
     results = []
     for comment in (all_comments or []):
@@ -126,12 +196,7 @@ def search_posts(reddit: praw.Reddit, subreddits: str, term: str, limit: int, mi
     def _search():
         return list(reddit.subreddit(subreddits).search(term, sort=sort, limit=limit))
 
-    try:
-        posts = with_backoff(_search) or []
-    except Exception as e:
-        print(f"  [search] error for '{term}': {e}")
-        return []
-
+    posts = with_backoff(_search) or []
     return [p for p in posts if p.score >= min_score]
 
 
@@ -247,22 +312,25 @@ def main():
     print(f"  Output    : {output_path} ({args.format})")
     print()
 
-    reddit = init_reddit()
+    try:
+        reddit = init_reddit()
 
-    posts = scrape(
-        reddit=reddit, niche=niche, subreddits=subreddits, terms=terms,
-        limit=args.limit, max_posts=args.max_posts, min_score=args.min_score,
-        n_comments=args.comments, min_comment_score=args.min_comment_score,
-        sort=args.sort, output_path=output_path, fmt=args.format,
-    )
+        posts = scrape(
+            reddit=reddit, niche=niche, subreddits=subreddits, terms=terms,
+            limit=args.limit, max_posts=args.max_posts, min_score=args.min_score,
+            n_comments=args.comments, min_comment_score=args.min_comment_score,
+            sort=args.sort, output_path=output_path, fmt=args.format,
+        )
 
-    print(f"\nTotal unique posts collected: {len(posts)}")
+        print(f"\nTotal unique posts collected: {len(posts)}")
 
-    if args.format == "json":
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(posts, f, indent=2, ensure_ascii=False)
+        if args.format == "json":
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(posts, f, indent=2, ensure_ascii=False)
 
-    print(f"Saved -> {output_path}")
+        print(f"Saved -> {output_path}")
+    except ToolRuntimeError as e:
+        sys.exit(format_error(e))
 
 
 if __name__ == "__main__":

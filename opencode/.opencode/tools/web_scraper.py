@@ -20,11 +20,14 @@ Options:
 """
 
 import sys
+import os
 import json
 import argparse
-import textwrap
 import re
-import requests
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared_runtime import ToolRuntimeError, format_error, request_with_retries
+
 from bs4 import BeautifulSoup
 
 DEFAULT_UA = (
@@ -33,20 +36,16 @@ DEFAULT_UA = (
 )
 
 
-def fetch(url: str, timeout: int, user_agent: str, extra_headers: dict, follow: bool) -> requests.Response:
+def fetch(url: str, timeout: int, user_agent: str, extra_headers: dict, follow: bool):
     headers = {"User-Agent": user_agent, **extra_headers}
-    try:
-        resp = requests.get(url, headers=headers, timeout=timeout, allow_redirects=follow)
-        resp.raise_for_status()
-        return resp
-    except requests.exceptions.HTTPError as e:
-        sys.exit(f"ERROR: HTTP {e.response.status_code} — {url}")
-    except requests.exceptions.ConnectionError:
-        sys.exit(f"ERROR: Could not connect to {url}")
-    except requests.exceptions.Timeout:
-        sys.exit(f"ERROR: Request timed out after {timeout}s — {url}")
-    except requests.exceptions.RequestException as e:
-        sys.exit(f"ERROR: {e}")
+    result = request_with_retries(
+        "GET", url,
+        headers=headers,
+        timeout=timeout,
+        allow_redirects=follow,
+        provider="web_scraper",
+    )
+    return result.response
 
 
 def extract_text(soup: BeautifulSoup, selector: str | None) -> str:
@@ -55,7 +54,6 @@ def extract_text(soup: BeautifulSoup, selector: str | None) -> str:
         for sel in selector.split(","):
             elements.extend(soup.select(sel.strip()))
         return "\n\n".join(el.get_text(separator="\n", strip=True) for el in elements)
-    # Remove script/style noise
     for tag in soup(["script", "style", "noscript", "nav", "footer", "aside"]):
         tag.decompose()
     return soup.get_text(separator="\n", strip=True)
@@ -87,7 +85,6 @@ def extract_tables(soup: BeautifulSoup) -> str:
 
 
 def html_to_markdown(soup: BeautifulSoup, selector: str | None) -> str:
-    """Very lightweight HTML→Markdown conversion."""
     if selector:
         elements = []
         for sel in selector.split(","):
@@ -120,13 +117,12 @@ def html_to_markdown(soup: BeautifulSoup, selector: str | None) -> str:
         elif name == "li":
             lines.append(f"- {text}")
         elif name in ("td", "th"):
-            pass  # handled by table
+            pass
         elif name == "blockquote":
             lines.append(f"> {text}")
         elif name == "pre":
             lines.append(f"```\n{text}\n```")
 
-    # Deduplicate consecutive identical lines
     deduped = []
     prev = None
     for line in lines:
@@ -138,7 +134,6 @@ def html_to_markdown(soup: BeautifulSoup, selector: str | None) -> str:
 
 
 def clean_text(text: str) -> str:
-    """Collapse excessive blank lines."""
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
@@ -164,11 +159,13 @@ def main():
             sys.exit(f"ERROR: --headers is not valid JSON: {e}")
 
     print(f"Fetching: {args.url}", file=sys.stderr)
-    resp = fetch(args.url, args.timeout, args.user_agent, extra_headers, args.follow)
+    try:
+        resp = fetch(args.url, args.timeout, args.user_agent, extra_headers, args.follow)
+    except ToolRuntimeError as e:
+        sys.exit(format_error(e))
 
     content_type = resp.headers.get("Content-Type", "")
     if "html" not in content_type and args.mode not in ("html",):
-        # Non-HTML: return raw text
         result = resp.text[: args.max_chars]
     else:
         soup = BeautifulSoup(resp.content, "lxml")
