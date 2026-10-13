@@ -57,8 +57,8 @@ vim.keymap.set("t", "<C-k>", "<C-\\><C-N><C-w>k", {silent = true, desc="Go up"})
 vim.keymap.set("t", "<C-l>", "<C-\\><C-N><C-w>l", {silent = true, desc="Go right "})
 
 
---Autoformat
-vim.keymap.set({"n", "v"}, "<leader>lf", vim.lsp.buf.format, {silent = true, desc="Format the file "})
+--Autoformat: <leader>lf is provided by conform.nvim (see
+-- custom/plugins/conform-nvim-lint.lua) with LSP fallback for other filetypes.
 
 -- Toggle inlay hints
 vim.keymap.set("n", "<leader>lh", function()

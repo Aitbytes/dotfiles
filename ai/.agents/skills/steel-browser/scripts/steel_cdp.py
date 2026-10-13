@@ -133,7 +133,7 @@ def page_state(cdp, s):
 # ---------- site extractors ----------
 
 def extract_facebook(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (() => {
   const posts = [...document.querySelectorAll('div[role="article"]')].slice(0, 10).map(a => a.innerText.replace(/\\s+/g, ' ').slice(0, 300));
   const uniq = [];
@@ -146,7 +146,7 @@ def extract_facebook(js_eval):
 
 
 def extract_instagram(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (() => {
   const links = [...new Set([...document.querySelectorAll('a[href*="/p/"], a[href*="/reel/"]')].map(a => a.getAttribute('href')))];
   const header = document.querySelector('header') || document;
@@ -160,7 +160,7 @@ def extract_instagram(js_eval):
 
 
 def extract_tiktok(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (() => {
   const items = [...document.querySelectorAll('a[href*="/video/"]')].slice(0, 20).map(a => {
     const card = a.closest('[data-e2e], div');
@@ -178,7 +178,7 @@ def extract_tiktok(js_eval):
 
 
 def extract_ikea(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (() => {
   const items = [];
   const modules = [...document.querySelectorAll('.plp-price-module')];
@@ -197,7 +197,7 @@ def extract_ikea(js_eval):
 
 
 def extract_amazon(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (() => {
   const results = [...document.querySelectorAll('[data-component-type="s-search-result"]')];
   const items = results.slice(0, 40).map(r => {
@@ -216,7 +216,7 @@ def extract_amazon(js_eval):
 
 
 def extract_aliexpress(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (async () => {
   for (let i = 0; i < 3; i++) { window.scrollBy(0, 1200); await new Promise(r => setTimeout(r, 600)); }
   const cards = [...document.querySelectorAll('.search-item-card-wrapper-gallery')].slice(0, 60);
@@ -242,7 +242,7 @@ def extract_aliexpress(js_eval):
 
 
 def extract_action(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (async () => {
   for (let i = 0; i < 3; i++) { window.scrollBy(0, 1200); await new Promise(r => setTimeout(r, 600)); }
   const tiles = [...document.querySelectorAll('a[href*="/p/"]')];
@@ -262,7 +262,7 @@ def extract_action(js_eval):
 
 
 def extract_but(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (async () => {
   const realPrice = () => !!document.querySelector('[class*="product-card__price"]:not([class*="skeleton"]), [class*="price"]:not([class*="skeleton"])');
   for (let i = 0; i < 12 && !realPrice(); i++) await new Promise(r => setTimeout(r, 2000));
@@ -291,7 +291,7 @@ def extract_but(js_eval):
 
 
 def extract_conforama(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (async () => {
   // let price hydration start before scrolling: poll for the first numeric price
   const priceReady = () => { const t = document.querySelector('article[data-component-id="product-tile"] .price'); return !!(t && /\d/.test(t.textContent || '')); };
@@ -325,7 +325,7 @@ def extract_conforama(js_eval):
 
 
 def extract_manomano(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (async () => {
   // CAUTION: ManoMano virtualizes its grid — scrolling REMOVES cards from the DOM,
   // and cards dehydrate over time. Parse IMMEDIATELY (no scroll, no long poll);
@@ -355,7 +355,7 @@ def extract_manomano(js_eval):
 
 
 def extract_vidaxl(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (async () => {
   for (let i = 0; i < 3; i++) { window.scrollBy(0, 1400); await new Promise(r => setTimeout(r, 700)); }
   const tiles = [...document.querySelectorAll('.product-tile')].slice(0, 60);
@@ -376,7 +376,7 @@ def extract_vidaxl(js_eval):
 
 
 def extract_miliboo(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (() => {
   const cards = [...document.querySelectorAll('.product-teaser, .card.product')].slice(0, 60);
   const items = cards.map(c => {
@@ -395,7 +395,7 @@ def extract_miliboo(js_eval):
 
 
 def extract_kavehome(js_eval):
-    return js_eval("""
+    return js_eval(r"""
 (async () => {
   for (let i = 0; i < 4; i++) { window.scrollBy(0, 1600); await new Promise(r => setTimeout(r, 800)); }
   const links = [...new Set([...document.querySelectorAll('a[href*="/p/"]')].map(a => a.getAttribute('href').split('?')[0]))];
@@ -417,7 +417,7 @@ def extract_theredarchive(js_eval):
     - /r/<sub>/<slug>.<id> -> thread (OP + comments from JSON-LD, sorted by upvotes)
     - /r/<sub>       -> subreddit index (Top Posts table)
     All pages are server-rendered; no walls, no login."""
-    return js_eval("""
+    return js_eval(r"""
 (() => {
   const path = location.pathname;
   const clean = (t) => (t || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();

@@ -74,14 +74,14 @@ uv run --with requests --with certifi --with youtube-transcript-api \
 ```
 
 Look for: comparison videos, long-term reviews, problem-focused content.
-Flag: YouTube reviews may be sponsored — cross-reference with Reddit.
+Flag: YouTube reviews may be sponsored — cross-reference with independent community signal (TheRedArchive is TRP-only; for products use Amazon reviews + forums).
 
 ### Wave 4 — Review & Reputation Validation
 
 For each shortlisted item verify both product AND seller:
 
-- **Product reviews**: Amazon/retailer reviews, Reddit discussions
-- **Seller/brand reputation**: Trustpilot, Reddit "[brand] legit", search results
+- **Product reviews**: Amazon/retailer reviews, community forums
+- **Seller/brand reputation**: Trustpilot, "[brand] legit" forum/archive searches
 
 ---
 
@@ -90,7 +90,7 @@ For each shortlisted item verify both product AND seller:
 1. **Link everything** — Every price, review, and claim MUST have a URL
 2. **Multi-wave is mandatory** — Orient → Source → Validate → Synthesize
 3. **Trust no one** — Always verify product AND seller/brand reputation
-4. **Use community signal** — Reddit and YouTube are the differentiators
+4. **Use community signal** — YouTube + forums + review platforms are the differentiators (Reddit: STANDBY — see Wave 3)
 5. **Be the advisor** — Highlight red flags, return policies, and shipping risks
 6. **Use `uv run --with <pkg>`** for any Python tasks — never `pip` directly
 
@@ -102,7 +102,7 @@ For each shortlisted item verify both product AND seller:
 
 - What the product category looks like
 - Critical features to look for
-- What Reddit users consistently praise or complain about
+- What community users consistently praise or complain about
 
 ### 2. Top Recommendations
 
@@ -111,12 +111,12 @@ For each recommended product:
 - **Product Name & Direct Link**
 - **Price & Retailer** (with source URL)
 - **Why this product?** Objective pros and cons
-- **Product Review Summary** — cite specific sources (Amazon rating, Reddit themes, YouTube reviewers)
-- **Seller/Brand Reputation** — cite Trustpilot, Reddit threads, or feedback scores
+- **Product Review Summary** — cite specific sources (Amazon rating, forum/archive themes, YouTube reviewers)
+- **Seller/Brand Reputation** — cite Trustpilot, forum threads, or feedback scores
 
 ### 3. Community Signal
 
-- What Reddit users say (cite specific threads)
+- What community users say (cite specific threads/forums)
 - What YouTube reviewers say (cite specific videos)
 - Repeated complaints across sources
 
@@ -149,6 +149,7 @@ For each recommended product:
 - Output: comparison TABLES with linked prices, ONE link per cell. Google Sheet as decision tool on request (checklist columns, checkbox totals, shopping list). Priority-ranked shopping list, never an exhaustive assumed purchase.
 - Division of labor: agent researches and drafts, HE buys and sends. No autonomous purchases; Gmail = draft only.
 - Coverage: wide samples, multi-channel (official + Amazon reviews + YouTube + TikTok/IG + forums). Practitioner feedback outranks official pages. IKEA is the price/quality anchor to beat; seek budget-friendly alternatives, quality confirmed by reviews.
+- Locale: France/Europe is the DEFAULT context: FR sources first (service-public.fr, ameli.fr, UFC-Que Choisir, FR comparators), FR consumer norms; US/global generalizations need explicit justification.
 - Language: follow the message's language (FR dominant since 2026-09, EN for tech deliverables). NO m-dashes in deliverables. Tables over prose. Numbered options; he answers by numbers.
 - Every claim carries its source. Final deliverable = structured synthesis with confidence levels, disagreements called out, recommended next step. NEVER a notes dump.
 

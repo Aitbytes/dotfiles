@@ -284,7 +284,7 @@ vim.keymap.set('n', '<leader>sc', require('telescope.builtin').colorscheme, { de
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim', 'yaml', 'json', 'dockerfile', 'html', 'css', 'hcl' },
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim', 'yaml', 'json', 'dockerfile', 'html', 'css', 'hcl', 'sql', 'jinja', 'jinja_inline' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -354,47 +354,9 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
-local on_attach = function(_, bufnr)
-  -- NOTE: Remember that lua is a real programming language, and as such it is possible
-  -- to define small helper and utility functions so you don't have to repeat yourself
-  -- many times.
-  --
-  -- In this case, we create a function that lets us more easily define mappings specific
-  -- for LSP related items. It sets the mode, buffer and description for us each time.
-  local nmap = function(keys, func, desc)
-    if desc then
-      desc = 'LSP: ' .. desc
-    end
-
-    vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
-  end
-
-  nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
-  nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
-
-  nmap('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
-  nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-  nmap('gI', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
-  nmap('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
-  nmap('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-  nmap('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
-
-  -- See `:help K` for why this keymap
-  nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
-  nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
-
-  -- Lesser used LSP functionality
-  nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
-  nmap('<leader>wa', vim.lsp.buf.add_workspace_folder, '[W]orkspace [A]dd Folder')
-  nmap('<leader>wr', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
-  nmap('<leader>wl', function()
-    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-  end, '[W]orkspace [L]ist Folders')
-
-  -- Create a command `:Format` local to the LSP buffer
-  vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
-    vim.lsp.buf.format()
-  end, { desc = 'Format current buffer with LSP' })
+-- Keymaps are shared with rustaceanvim (see lua/user/lspmaps.lua)
+local on_attach = function(client, bufnr)
+  require('user.lspmaps').attach(client, bufnr)
 end
 
 -- Enable the following language servers
@@ -427,6 +389,29 @@ local servers = {
     },
   },
   ansiblels = {},
+  -- Docker
+  dockerls = {},
+  -- docker-compose files (ft is yaml.docker-compose, see lua/user/filetypes.lua)
+  docker_compose_language_service = { filetypes = { 'yaml.docker-compose' } },
+  -- Generic YAML (compose files excluded, handled by the dedicated server above)
+  yamlls = {
+    filetypes = { 'yaml' },
+    yaml = {
+      schemaStore = {
+        enable = true,
+        url = 'https://www.schemastore.org/api/json/catalog.json',
+      },
+      validate = true,
+    },
+  },
+  -- SQL is handled by conform.nvim (sqlfluff format) + nvim-lint (sqlfluff
+  -- diagnostics) — see lua/custom/plugins/conform-nvim-lint.lua. SQL LSPs
+  -- (sqls/sqlls) are abandoned, and sqlfluff never had an LSP server.
+  -- Jinja templates (variables completion via init_options)
+  jinja_lsp = {
+    filetypes = { 'jinja' },
+    init_options = { lang = 'python', templates = './templates' },
+  },
   -- ansible_lint = {
   --   filetypes = { 'ansible.yaml' },
   -- },
@@ -455,11 +440,21 @@ mason_lspconfig.setup {
   ensure_installed = vim.tbl_keys(servers),
   handlers = {
     function(server_name)
+      local opts = servers[server_name] or {}
+      -- settings must be JSON-serializable: strip function values
+      local settings = {}
+      for k, v in pairs(opts) do
+        if type(v) ~= 'function' then
+          settings[k] = v
+        end
+      end
       local config = {
         capabilities = capabilities,
         on_attach = on_attach,
-        settings = servers[server_name],
-        filetypes = (servers[server_name] or {}).filetypes,
+        settings = settings,
+        filetypes = opts.filetypes,
+        init_options = opts.init_options,
+        root_dir = opts.root_dir,
       }
 
       -- Add root_dir configuration for gopls
@@ -475,6 +470,14 @@ mason_lspconfig.setup {
     end
   }
 }
+
+-- sqlfluff has no mason-lspconfig mapping: install it via the mason registry
+pcall(function()
+  local mason_registry = require('mason-registry')
+  if not mason_registry.is_installed('sqlfluff') then
+    mason_registry.get_package('sqlfluff'):install()
+  end
+end)
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
@@ -536,26 +539,6 @@ cmp.setup {
 --Autoformat on write
 vim.cmd [[autocmd BufWritePre <buffer> Format]]
 
--- Auto-trigger completion for Rust on . and ::
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'rust',
-  callback = function()
-    vim.keymap.set('i', '.', function()
-      vim.api.nvim_feedkeys('.', 'n', false)
-      require('cmp').complete()
-    end, { buffer = true, silent = true })
-    vim.keymap.set('i', ':', function()
-      vim.api.nvim_feedkeys(':', 'n', false)
-      -- Trigger completion only if previous char is also :
-      local line = vim.api.nvim_get_current_line()
-      local col = vim.api.nvim_win_get_cursor(0)[2]
-      if col >= 1 and line:sub(col, col) == ':' then
-        require('cmp').complete()
-      end
-    end, { buffer = true, silent = true })
-  end,
-})
-
 --Auto unfold on read
 -- vim.cmd [[autocmd BufReadPost,FileReadPost * normal zR]]
 
@@ -580,6 +563,7 @@ require('ufo').setup({
 -- Gets refactored configs
 require "user.mappings"
 require "user.options"
+require "user.filetypes"
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

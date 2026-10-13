@@ -24,7 +24,7 @@ chmod +x ~/.local/bin/linkedin-dm
 
 | Command | `LINKEDIN_COOKIE_HEADER` | `LINKEDIN_LI_AT` |
 |---------|--------------------------|-------------------|
-| `status` | Optional | ✅ Minimum |
+| `status` | ✅ Sufficient alone (verified 2026-10-13) | ✅ Works |
 | `list` | ✅ Required | ❌ Not enough |
 | `read` | ✅ Required | ❌ Not enough |
 

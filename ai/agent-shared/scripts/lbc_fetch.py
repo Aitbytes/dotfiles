@@ -39,10 +39,12 @@ def load_proxy(country: str = "fr") -> str:
 
 
 def fetch(query: str, proxy: str, timeout: int = 60, attempts: int = 3) -> str:
+    from urllib.parse import quote
     from curl_cffi import requests  # uv run --with curl_cffi
     last = "no attempts"
+    url = SEARCH_URL.format(q=quote(query))
     for i in range(1, attempts + 1):
-        r = requests.get(SEARCH_URL.format(q=query), impersonate="chrome",
+        r = requests.get(url, impersonate="chrome",
                          proxies={"http": proxy, "https": proxy},
                          headers={"Accept-Language": "fr-FR,fr;q=0.9"}, timeout=timeout)
         if r.status_code == 200 and "__NEXT_DATA__" in r.text:
@@ -65,7 +67,7 @@ def parse(html: str) -> list[dict]:
         out.append({
             "id": a.get("list_id"),
             "title": a.get("subject"),
-            "price_eur": (a.get("price_cents") or 0) / 100,
+            "price_eur": (a["price_cents"] / 100) if a.get("price_cents") else None,
             "city": loc.get("city"),
             "url": a.get("url"),
             "date": a.get("first_publication_date"),
@@ -79,14 +81,14 @@ def main() -> None:
     ap.add_argument("--pages", type=int, default=1, help="search-result pages (offset pagination)")
     ap.add_argument("--out", default=None, help="write JSON here (default: stdout)")
     args = ap.parse_args()
+    if args.pages > 1:
+        sys.exit("error: --pages>1 not implemented; use offset param in SEARCH_URL")
 
     proxy = load_proxy()
     all_ads: list[dict] = []
     for page in range(1, args.pages + 1):
-        html = fetch(args.query, proxy)  # NOTE: page offset needs page=2 param on the URL when pages>1
+        html = fetch(args.query, proxy)
         all_ads.extend(parse(html))
-        if args.pages > 1:
-            sys.exit("error: --pages>1 not implemented; use offset param in SEARCH_URL")
     seen, dedup = set(), []
     for a in all_ads:
         if a["id"] and a["id"] not in seen:

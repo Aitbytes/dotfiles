@@ -1,14 +1,6 @@
 ---
 name: steel-browser
 description: "Fetch and extract web data via the LAN Steel browser (CDP) - the workhorse for JS-heavy and anti-bot retail sites (amazon.fr, aliexpress, but, conforama, manomano, ikea, action…), TikTok/Instagram/Facebook public data, and TheRedArchive. Hosts sites.json: the single source of truth for ANY site's access status - consult it before choosing a tool. NOT for: leboncoin (lbc_fetch.py via social-marketplace-research), plain static pages (curl/web_scraper)."
-version: 1.2.0
-author: Hermes Agent
-license: MIT
-platforms: [linux]
-metadata:
-  hermes:
-    tags: [steel, cdp, browser, scraping, extraction]
-    related_skills: []
 ---
 
 # Steel Browser Skill
@@ -25,7 +17,7 @@ Drive the self-hosted Steel browser (Docker stack `steel` on `admin@192.168.1.50
 - Site playbooks: Facebook public pages, Instagram profiles, TikTok explore + transcripts, IKEA product search
 - Screenshotting pages; wall detection (Cloudflare/DataDome/login)
 - Re-testing site accessibility after Steel/Chrome updates (`scripts/steel_stress.py`)
-- Don't use for: plain static HTML (use `web_extract`); Google search (blocked, use DDG/Bing); leboncoin (DataDome hard-blocked); anything requiring login credentials (exception: Devoteam corporate Gmail — playbook below)
+- Don't use for: plain static HTML (use `web_extract`); Google search (blocked, use DDG/Bing); leboncoin (use `lbc_fetch.py` via social-marketplace-research, NOT steel); anything requiring login credentials (exception: Devoteam corporate Gmail — playbook below)
 
 ## Prerequisites
 - Steel stack healthy: `curl -s http://192.168.1.50:3000/v1/health` → `{"status":"ok"}`
@@ -107,7 +99,7 @@ All through the `terminal` tool, from any cwd (scripts resolve their own path):
 - **Instagram profiles** (`instagram.com/<handle>/`): handle, follower/following stats, bio, up to ~8 post links (`a[href*="/p/"]`). No login wall for profile pages. Reels: video plays logged-out (blob: src) but no caption/transcript data in DOM — transcripts need login.
 - **TikTok explore** (`tiktok.com/explore`): video links + view counts (captions only render on hover — not in DOM). Profile pages (`/@user`): grid is lazy-loaded — scroll or treat explore as the entry.
 - **IKEA search** (`ikea.com/<locale>/search/?q=`): products via `.plp-price-module` — name `.plp-price-module__product-name`, price `.plp-price__sr-text` (strip "Prix"), link `a[href*="/p/"]`. ~12+ items per page.
-- **leboncoin**: DataDome captcha iframe (`geo.captcha-delivery.com`) — hard-blocked headless, retry does NOT clear. Skip.
+- **leboncoin**: direct steel fetch hits the DataDome captcha (`geo.captcha-delivery.com`) — do NOT fetch leboncoin via steel. Use `lbc_fetch.py` (curl_cffi + FR-geo proxy, verified unlock) per the social-marketplace-research skill.
 
 ### Devoteam corporate Gmail sign-in (verified 2026-09-08)
 Google Workspace account `mohamed.ait.taleb@devoteam.com` — full login flow driven over Steel CDP via browser-use, incl. password fallback + 2FA phone prompt. Result: signed-in session persists in Steel's shared Chrome profile (future tabs/fetches authenticated, no re-login until logout/expiry).

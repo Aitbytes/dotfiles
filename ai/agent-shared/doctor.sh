@@ -27,20 +27,37 @@ if [ -n "$RID" ] && [ -n "$SID" ]; then
 fi
 [ -n "$TOK" ] && line ok "vault approle: login ok" || line FAIL "vault approle: login FAILED (agent cred path down; see secrets-management skill)"
 
-# 4. LinkedIn cookie (probe = env-guard linkedin + linkedin-dm status)
+# 4. LinkedIn cookie: LIVE probe (linkedin-dm status), not just presence
 if [ -n "$TOK" ]; then
-  CK=$(VAULT_TOKEN="$TOK" vault kv get -field=LINKEDIN_COOKIE_HEADER kv-v2/blithe/agents-scratch/linkedin 2>/dev/null)
-  if [ -n "$CK" ]; then
-    AGE=$(VAULT_TOKEN="$TOK" vault kv get -format=json kv-v2/blithe/agents-scratch/linkedin 2>/dev/null | jq -r '.data.metadata.created_time // "?"' | cut -dT -f1)
-    line ok "linkedin cookie: present (vaulted $AGE) — run linkedin-dm status for live probe"
-  else line warn "linkedin cookie: absent/expired — renew via runbook linkedin-cookie.md"; fi
-else line warn "linkedin cookie: skipped (no vault auth)"; fi
+  if command -v linkedin-dm >/dev/null 2>&1; then
+    if CK=$(VAULT_TOKEN="$TOK" VAULT_ADDR="$VAULT_ADDR" bash -c 'export LINKEDIN_COOKIE_HEADER="$(env -u VAULT_TOKEN "'"'$HOME'"'/dotfiles/opencode/.opencode/tools/env-guard.sh linkedin" 2>/dev/null || VAULT_TOKEN="$VAULT_TOKEN" vault kv get -field=LINKEDIN_COOKIE_HEADER kv-v2/blithe/agents-scratch/linkedin 2>/dev/null)"; linkedin-dm status' 2>/dev/null) && echo "$CK" | grep -q Authenticated; then
+      line ok "linkedin: live probe OK ($(echo "$CK" | head -1 | cut -d' ' -f1-4))"
+    else
+      line warn "linkedin: cookie present but DEAD — renew via runbook linkedin-cookie.md (~2 min, agent-drivable)"
+    fi
+  else
+    CK=$(VAULT_TOKEN="$TOK" vault kv get -field=LINKEDIN_COOKIE_HEADER kv-v2/blithe/agents-scratch/linkedin 2>/dev/null)
+    [ -n "$CK" ] && line warn "linkedin cookie: present but linkedin-dm missing — install before trusting" || line warn "linkedin cookie: absent — renew via runbook linkedin-cookie.md"
+  fi
+else line warn "linkedin: skipped (no vault auth)"; fi
 
 # 5. Reddit
 line warn "reddit: STANDBY (auth changed 2026-10-13) — no probe by design"
 
 # 6. youtube.py deps resolve + reachability
 if timeout 60 uv run --with requests --with certifi python3 -c "import requests; requests.get('https://www.youtube.com', timeout=15)" >/dev/null 2>&1; then line ok "youtube.py: deps + reachability ok"; else line FAIL "youtube.py: deps or network fail"; fi
+
+# 6b. curl_cffi resolves (lbc_fetch.py dependency — the leboncoin unlock)
+if timeout 60 uv run --with curl_cffi python3 -c "import curl_cffi" >/dev/null 2>&1; then line ok "curl_cffi: resolvable (lbc_fetch OK)"; else line FAIL "curl_cffi: not resolvable — lbc_fetch will die"; fi
+
+# 6c. linkedin-dm binary
+command -v linkedin-dm >/dev/null 2>&1 && line ok "linkedin-dm: binary present" || line FAIL "linkedin-dm: binary missing (~/.local/bin/linkedin-dm)"
+
+# 6d. Proxy FR exit (the leboncoin unlock depends on _country-fr, not the plain pool)
+if [ -n "$P" ]; then
+  CFR=$(timeout 30 curl -s --proxy "http://${P%%@*}_country-fr@${P#*@}" "http://ip-api.com/json/?fields=country" --max-time 25 2>/dev/null)
+  echo "$CFR" | grep -q 'France' && line ok "proxy FR-exit: France confirmed (_country-fr)" || line FAIL "proxy FR-exit: got '${CFR:-nothing}' — leboncoin unlock compromised"
+fi
 
 # 7. playwright-cli
 V=$(timeout 30 npx --no-install @playwright/cli --version 2>/dev/null)

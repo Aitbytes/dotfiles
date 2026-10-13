@@ -2,8 +2,9 @@
 
 > This file is the EDITING MASTER for humans. The canonical block below is pasted
 > IDENTICALLY into: retail-research, social-marketplace-research, research-assistant,
-> playwright-browser, youtube-research. Drift-lint: byte-equality grep of the pasted
-> block against this file's "CANONICAL BLOCK" section.
+> playwright-browser, youtube-research, reddit-research (standby; block present for
+> reactivation). Drift-lint: agent-shared/drift_lint.py (byte-equality against this file's
+> "CANONICAL BLOCK" section).
 
 ## Derivation (evidence, not vibes — recorded 2026-10-13)
 

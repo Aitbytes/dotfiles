@@ -14,7 +14,7 @@
 | Aspect | Rule | Evidence (quote → session, date) |
 |---|---|---|
 | Language | Follow the message's language. FR dominant since 2026-09; EN common for tech deliverables. Deliverable language = confirm explicitly when mixed. | « Make the report in french this time » / « Please rewritte in english. » / « Let's stick with english » → --tmp--/01a01169, 01a03327, 019f3c3e |
-| Formatting | NO m-dashes (he calls them slop). Tables > prose. Links to sources mandatory in deliverables. | "DO NOT USE m-dashes , and DO USE TABLES" → --home-a8taleb--/019ea..., 2026-06-12; « m-dashes qui CRIENT au slop » → 01a05914-era, 2026-10-09 |
+| Formatting | NO m-dashes (he calls them slop). Tables > prose. Links to sources mandatory in deliverables. | "DO NOT USE m-dashes , and DO USE TABLES" → --home-a8taleb--/019ea..., 2026-06-12; « m-dashes qui CRIENT au slop » → bac (01a08b70), 2026-10-09 |
 | Options | Present numbered options/plans; he answers by numbers ("Run 1 3 and 4", « exécuter 1,2,3 et 4 »). | → --home-a8taleb--/270a, 2026-05-24; bac, 2026-10-08 |
 | Explain before execute | Non-trivial steps: explain, wait for his "go". | « Explique moi le 4 avant que je te donne le go » → bac, 2026-10-09 |
 | Go/no-go | Short familiar green lights ("GO", « Vasy fonce », « ça peut reprendre », « Le plan est parfait ») mean PROCEED, not new instructions. | → bac 2026-10-09; canapé session 2026-08-24 |
@@ -50,7 +50,7 @@
 | Logistics profile | No car, 3rd floor no elevator, 42m² flat, Toulouse 31000 city center, 20min walk from IKEA. Volume/transport/assembly ARE decision criteria. DIY assembly accepted if price justifies (01a04292; « Ok pour monter moi même » 01a04295). |
 | Local + online | Always include physical Toulouse stores alongside online: IKEA, Normal (discounter), and magasin-by-magasin alternatives when an item is missing (01a042ca: SheaMoisture → Normal alternatives; satin bonnet search 2026-09-14). |
 | Output format | Comparison TABLES with linked prices, one link per cell (« 4 collones aux liens vers les photos histoire d'avoir un lien par cellule seulement », 019ed1e6). Google Sheet as the decision tool on request: checklist columns, checkbox-driven totals, shopping list into the Sheet (019ed1e6; 01a0e8dc, 2026-09-28). |
-| Anchors & alternatives | IKEA = the price/quality anchor to beat; actively seek budget-friendly alternatives to official brands, quality CONFIRMED via reviews afterwards (01a033ba, 2026-08-24). Vendor set: Amazon, AliExpress, Temu, But, Conforama, ManoMano, Action, Leboncoin, Vinted + social commerce (01a02429, 2026-07-18). |
+| Anchors & alternatives | IKEA = the price/quality anchor to beat; actively seek budget-friendly alternatives to official brands, quality CONFIRMED via reviews afterwards (01a033ba, 2026-08-24). Vendor set: Amazon, AliExpress, Temu, Action, But, Conforama + furniture stores (01a02429, 2026-08-21); Leboncoin/Vinted priority expressed earlier (019f7499, 2026-07-18). |
 | Division of labor | The agent researches and drafts. HE buys, sends, decides. No autonomous purchases. Gmail: create the draft, he edits and sends (01a0dea7, 2026-09-26). |
 | Use-case first | Recommendations start from his described problem (time sink, mess, usage), not from features (razor→trimmer rationale, 01a044bf, 2026-08-28; « Juste s'asseoir, matelas gonflable hors périmetre » 01a033ba). |
 | Knowledge persistence | Buying knowledge is capitalized: tandem wiki article with practical info, GTD tasks (store-visit details), retro task after the experience (019ed195, 2026-06-18; 01a042ca, 2026-08-27). |
@@ -94,7 +94,23 @@
 13. Surface-level reviews that miss real problems (bac, 2026-10-09).
 14. Making him re-explain context that already exists in skills/wiki/files: « comme ça je perd pas de temps à te reexpliquer certaines choses » (a3b, 2026-09-09).
 
-## 7. Maintenance protocol
+## 7. CANONICAL DISTILLED BLOCK (paste-identical into retail-research, social-marketplace-research, research-assistant)
+
+```markdown
+## User Preferences (distilled — editing master: ~/dotfiles/ai/agent-shared/user-preferences.md)
+
+- Budget: a euro figure is REQUIRED (range or cap). Stretch above it only with a durability/wear argument. NEVER assume he buys everything: deliver a PRIORITY ORDER so he can budget.
+- Decision driver: quality/price ratio. Compare BOTH new and second-hand (columns: neuf min/max, occasion min/max); hygiene risk can disqualify second-hand (mattresses, soft furniture). Repair-before-rebuy for electronics.
+- Logistics profile (decision criteria, not trivia): Toulouse 31000 center, 42m2, 3rd floor no elevator, NO car, 20min walk from IKEA. Delivery window is a hard criterion; click-and-collect valued; include local stores (IKEA, Normal) alongside online.
+- Output: comparison TABLES with linked prices, ONE link per cell. Google Sheet as decision tool on request (checklist columns, checkbox totals, shopping list). Priority-ranked shopping list, never an exhaustive assumed purchase.
+- Division of labor: agent researches and drafts, HE buys and sends. No autonomous purchases; Gmail = draft only.
+- Coverage: wide samples, multi-channel (official + Amazon reviews + YouTube + TikTok/IG + forums). Practitioner feedback outranks official pages. IKEA is the price/quality anchor to beat; seek budget-friendly alternatives, quality confirmed by reviews.
+- Locale: France/Europe is the DEFAULT context: FR sources first (service-public.fr, ameli.fr, UFC-Que Choisir, FR comparators), FR consumer norms; US/global generalizations need explicit justification.
+- Language: follow the message's language (FR dominant since 2026-09, EN for tech deliverables). NO m-dashes in deliverables. Tables over prose. Numbered options; he answers by numbers.
+- Every claim carries its source. Final deliverable = structured synthesis with confidence levels, disagreements called out, recommended next step. NEVER a notes dump.
+```
+
+## 8. Maintenance protocol
 
 - Re-mine sessions (same 4-segment dispatch) after ~3 months or after any cluster of new corrections.
 - When a rule changes, update: (1) this master, (2) the distilled block pasted in retail-research, social-marketplace-research, research-assistant skills (byte-identical), (3) optionally his tandem profile.

@@ -87,7 +87,7 @@ Primary: steel-browser public-page extractor (`facebook.com/<page>/` → posts, 
 | Query type | Order |
 |---|---|
 | Second-hand product (France) | Leboncoin (lbc_fetch) → Vinted (playwright) → Facebook Marketplace (skip: login) |
-| User reviews / opinions | TikTok + Instagram lookups → YouTube (youtube-research skill) → Reddit (STANDBY — see reddit-research) |
+| User reviews / opinions | TikTok + Instagram lookups → YouTube (youtube-research skill) → Amazon reviews + Trustpilot + forums (steel extractors / playwright) → Reddit (STANDBY — see reddit-research) |
 | Local service provider | Facebook public pages → Leboncoin Services (lbc_fetch, category=14) → web search |
 | Price benchmark (new) | steel retail extractors (amazon.fr, aliexpress…) — see sites.json |
 
@@ -138,6 +138,7 @@ Do not dispatch to these skills yourself — reference in your report; the orche
 - Output: comparison TABLES with linked prices, ONE link per cell. Google Sheet as decision tool on request (checklist columns, checkbox totals, shopping list). Priority-ranked shopping list, never an exhaustive assumed purchase.
 - Division of labor: agent researches and drafts, HE buys and sends. No autonomous purchases; Gmail = draft only.
 - Coverage: wide samples, multi-channel (official + Amazon reviews + YouTube + TikTok/IG + forums). Practitioner feedback outranks official pages. IKEA is the price/quality anchor to beat; seek budget-friendly alternatives, quality confirmed by reviews.
+- Locale: France/Europe is the DEFAULT context: FR sources first (service-public.fr, ameli.fr, UFC-Que Choisir, FR comparators), FR consumer norms; US/global generalizations need explicit justification.
 - Language: follow the message's language (FR dominant since 2026-09, EN for tech deliverables). NO m-dashes in deliverables. Tables over prose. Numbered options; he answers by numbers.
 - Every claim carries its source. Final deliverable = structured synthesis with confidence levels, disagreements called out, recommended next step. NEVER a notes dump.
 

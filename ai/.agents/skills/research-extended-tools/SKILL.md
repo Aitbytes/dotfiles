@@ -41,7 +41,7 @@ General pattern:
 uv run --with <deps> python3 ~/.opencode/tools/<TOOL>.py <args> [--format md|json]
 ```
 
-If `~/.config/proxy-conf` contains a dead proxy, strip proxy vars first:
+The proxy is ACTIVE (see env-guard proxy). If it ever goes down, strip proxy vars:
 ```bash
 HTTP_PROXY= HTTPS_PROXY= uv run --with <deps> python3 ~/.opencode/tools/<TOOL>.py ...
 ```
@@ -199,8 +199,8 @@ print(' '.join(s.text for s in segments))
 | `eudamed_lookup.py` | `--with requests --with certifi` |
 | `reddit_scraper.py` | `--with requests --with certifi --with praw --with python-dotenv` — **STANDBY 2026-10-13, do not run** |
 
-**Proxy workaround** (when `~/.config/proxy-conf` contains a dead proxy):
-prefix all commands with `HTTP_PROXY= HTTPS_PROXY= ` to strip proxy vars.
+**Proxy fallback** (only if the proxy is down — probe with `env-guard proxy` + a test curl):
+prefix commands with `HTTP_PROXY= HTTPS_PROXY= ` to strip proxy vars.
 
 ---
 
