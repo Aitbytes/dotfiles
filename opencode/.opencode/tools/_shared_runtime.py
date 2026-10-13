@@ -24,6 +24,12 @@ DEFAULT_HOST_OVERRIDES = {
 }
 ALLOWED_HOST_ACTIONS = {"force_proxy", "force_direct", "deny"}
 
+# Per-provider slow-proxy detection: When a request through a proxy takes
+# longer than the threshold, the provider is flagged and subsequent calls
+# to request_with_retries auto-switch to direct mode for that provider.
+_slow_proxy_threshold_s = 3.0
+_slow_proxy_providers: dict[str, bool] = {}
+
 
 @dataclass(frozen=True)
 class TimeoutConfig:
@@ -486,6 +492,16 @@ def request_with_retries(
     direct_fallback_used = False
     last_error: ToolRuntimeError | None = None
 
+    # Auto-bypass proxy for providers previously flagged as slow-through-proxy
+    if (
+        current_proxy_mode == "auto"
+        and provider
+        and _slow_proxy_providers.get(provider)
+    ):
+        current_proxy_mode = "direct"
+        direct_fallback_used = True
+        route_transitions.append({"from": "proxy", "to": "direct", "reason": "slow_proxy_cached"})
+
     for attempt in range(1, policy.max_attempts + 1):
         req_session, decision = configure_requests_session(
             session,
@@ -495,6 +511,7 @@ def request_with_retries(
             host_overrides=host_overrides,
         )
 
+        req_start = time.monotonic()
         try:
             response = req_session.request(
                 method.upper(),
@@ -506,6 +523,7 @@ def request_with_retries(
                 timeout=timeout_cfg.as_requests_timeout(),
                 allow_redirects=allow_redirects,
             )
+            req_elapsed = time.monotonic() - req_start
             if detect_blocked_response(response, block_markers):
                 raise create_error(
                     "blocked",
@@ -527,6 +545,23 @@ def request_with_retries(
                 )
             if response.status_code >= 400:
                 raise error_from_response(response, stage="fetch", provider=provider)
+
+            # Detect slow proxy on successful requests and flag provider for subsequent calls
+            if (
+                decision.used
+                and provider
+                and (time.monotonic() - req_start) > _slow_proxy_threshold_s
+                and not _slow_proxy_providers.get(provider)
+            ):
+                _slow_proxy_providers[provider] = True
+                # Write a notice to stderr so agents see the fallback happening
+                import sys as _sys
+                print(
+                    f"[youtube-tool] Proxy added ~{(time.monotonic() - req_start):.0f}s latency for {provider}; "
+                    f"switching to direct for remaining requests.",
+                    file=_sys.stderr,
+                )
+
             return RequestResult(
                 response=response,
                 proxy=decision,

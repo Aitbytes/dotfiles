@@ -13,3 +13,7 @@ opencode/.opencode/tools/.reddit_data/
 .scripts/
 .playwright-cli/
 .playwright/
+
+# research-stack refactor (P0 baseline)
+ai/.agents/skills/.bak/
+**/.venv/

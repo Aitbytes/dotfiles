@@ -291,132 +291,100 @@ def _build_proxy_env(proxy_mode: str = "auto") -> dict[str, str]:
 
 
 def _try_transcript_api(video_id: str, languages: list[str] | None = None, proxy_mode: str = "auto") -> dict[str, Any]:
-    sub_env = _build_proxy_env(proxy_mode)
-    try:
-        result = subprocess.run(
-            [
-                sys.executable, "-m", "youtube_transcript_api",
-                video_id,
-            ],
-            capture_output=True, text=True, timeout=30,
-            env=sub_env,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            snippets = []
-            for line in result.stdout.strip().splitlines():
-                line = line.strip()
-                if not line:
-                    continue
+    # youtube-transcript-api is not installed in system Python; use uv run subprocess only.
+    # The new API requires instance: YouTubeTranscriptApi().fetch(), not static .fetch().
+    # Proxy can cause IpBlocked from YouTube; retry without proxy on failure.
+    for attempt_pm in [proxy_mode, "direct"]:
+        sub_env = _build_proxy_env(attempt_pm)
+        try:
+            code = (
+                "from youtube_transcript_api import YouTubeTranscriptApi; "
+                f"t = YouTubeTranscriptApi().fetch('{video_id}'"
+            )
+            if languages:
+                code += f", languages={languages}"
+            code += "); "
+            code += "import json; print(json.dumps([{'text': s.text, 'start': s.start, 'duration': s.duration} for s in t]))"
+
+            result = subprocess.run(
+                ["uv", "run", "--with", "youtube-transcript-api", "python3", "-c", code],
+                capture_output=True, text=True, timeout=60,
+                env=sub_env,
+            )
+            if result.returncode == 0 and result.stdout.strip():
                 try:
-                    entry = json.loads(line)
-                    snippets.append({
-                        "text": entry.get("text", ""),
-                        "start": entry.get("start", 0),
-                        "duration": entry.get("duration", 0),
-                    })
+                    entries = json.loads(result.stdout.strip())
+                    if entries:
+                        snippets = [
+                            {"text": e["text"], "start": e.get("start", 0), "duration": e.get("duration", 0)}
+                            for e in entries
+                        ]
+                        full_text = " ".join(s["text"] for s in snippets)
+                        return {
+                            "source": TRANSCRIPT_SOURCE_YT_API,
+                            "confidence": CONFIDENCE_HIGH,
+                            "language": languages[0] if languages else "unknown",
+                            "snippet_count": len(snippets),
+                            "text": full_text,
+                            "snippets": snippets,
+                        }
                 except json.JSONDecodeError:
                     pass
-            if snippets:
-                full_text = " ".join(s["text"] for s in snippets)
-                return {
-                    "source": TRANSCRIPT_SOURCE_YT_API,
-                    "confidence": CONFIDENCE_HIGH,
-                    "language": languages[0] if languages else "unknown",
-                    "snippet_count": len(snippets),
-                    "text": full_text,
-                    "snippets": snippets,
-                }
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass
-
-    try:
-        code = (
-            "from youtube_transcript_api import YouTubeTranscriptApi; "
-            f"t = YouTubeTranscriptApi().fetch('{video_id}'"
-        )
-        if languages:
-            code += f", languages={languages}"
-        code += "); "
-        code += "import json; print(json.dumps([{'text': s.text, 'start': s.start, 'duration': s.duration} for s in t]))"
-
-        result = subprocess.run(
-            ["uv", "run", "--with", "youtube-transcript-api", "python3", "-c", code],
-            capture_output=True, text=True, timeout=60,
-            env=sub_env,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            try:
-                entries = json.loads(result.stdout.strip())
-                if entries:
-                    snippets = [
-                        {"text": e["text"], "start": e.get("start", 0), "duration": e.get("duration", 0)}
-                        for e in entries
-                    ]
-                    full_text = " ".join(s["text"] for s in snippets)
-                    return {
-                        "source": TRANSCRIPT_SOURCE_YT_API,
-                        "confidence": CONFIDENCE_HIGH,
-                        "language": languages[0] if languages else "unknown",
-                        "snippet_count": len(snippets),
-                        "text": full_text,
-                        "snippets": snippets,
-                    }
-            except json.JSONDecodeError:
-                pass
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            pass
 
     return {"source": TRANSCRIPT_SOURCE_NONE, "confidence": CONFIDENCE_LOW, "error": "youtube-transcript-api failed"}
 
 
 def _try_ytdlp_transcript(video_id: str, proxy_mode: str = "auto") -> dict[str, Any]:
-    sub_env = _build_proxy_env(proxy_mode)
-    try:
-        result = subprocess.run(
-            ["uv", "run", "--with", "yt-dlp", "--with", "certifi",
-             "yt-dlp", "--write-auto-sub", "--sub-lang", "en,en-.*,.*",
-             "--skip-download", "--output", f"/tmp/yt_{video_id}",
-             f"https://www.youtube.com/watch?v={video_id}"],
-            capture_output=True, text=True, timeout=120,
-            env=sub_env
-        )
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        return {"source": TRANSCRIPT_SOURCE_NONE, "confidence": CONFIDENCE_LOW, "error": "yt-dlp not available"}
-
+    # Retry without proxy if first attempt fails (prevents IP block)
     import glob as glob_mod
     import os
-
-    subtitle_files = glob_mod.glob(f"/tmp/yt_{video_id}.*.vtt") + glob_mod.glob(f"/tmp/yt_{video_id}.*.srt")
-    if not subtitle_files:
-        return {"source": TRANSCRIPT_SOURCE_NONE, "confidence": CONFIDENCE_LOW, "error": "No subtitle file produced by yt-dlp"}
-
-    for sf in subtitle_files:
+    for attempt_pm in [proxy_mode, "direct"]:
+        sub_env = _build_proxy_env(attempt_pm)
         try:
-            with open(sf, encoding="utf-8") as f:
-                content = f.read()
-            snippets = []
-            for line in content.splitlines():
-                line = line.strip()
-                if not line or line.startswith("WEBVTT") or line.startswith("NOTE") or "-->" in line or line.isdigit():
-                    continue
-                snippets.append(line)
-            if snippets:
-                full_text = " ".join(snippets)
-                for cleanup_sf in glob_mod.glob(f"/tmp/yt_{video_id}.*"):
-                    try:
-                        os.unlink(cleanup_sf)
-                    except OSError:
-                        pass
-                return {
-                    "source": TRANSCRIPT_SOURCE_YTDLP,
-                    "confidence": CONFIDENCE_MEDIUM,
-                    "language": "en",
-                    "snippet_count": len(snippets),
-                    "text": full_text,
-                    "snippets": [{"text": s, "start": 0, "duration": 0} for s in snippets],
-                }
-        except (OSError, UnicodeDecodeError):
+            result = subprocess.run(
+                ["uv", "run", "--with", "yt-dlp", "--with", "certifi",
+                 "yt-dlp", "--write-auto-sub", "--sub-lang", "en,en-.*,.*",
+                 "--skip-download", "--output", f"/tmp/yt_{video_id}",
+                 f"https://www.youtube.com/watch?v={video_id}"],
+                capture_output=True, text=True, timeout=120,
+                env=sub_env
+            )
+        except (subprocess.TimeoutExpired, FileNotFoundError):
             continue
+
+        subtitle_files = glob_mod.glob(f"/tmp/yt_{video_id}.*.vtt") + glob_mod.glob(f"/tmp/yt_{video_id}.*.srt")
+        if not subtitle_files:
+            continue
+
+        for sf in subtitle_files:
+            try:
+                with open(sf, encoding="utf-8") as f:
+                    content = f.read()
+                snippets = []
+                for line in content.splitlines():
+                    line = line.strip()
+                    if not line or line.startswith("WEBVTT") or line.startswith("NOTE") or "-->" in line or line.isdigit():
+                        continue
+                    snippets.append(line)
+                if snippets:
+                    full_text = " ".join(snippets)
+                    for cleanup_sf in glob_mod.glob(f"/tmp/yt_{video_id}.*"):
+                        try:
+                            os.unlink(cleanup_sf)
+                        except OSError:
+                            pass
+                    return {
+                        "source": TRANSCRIPT_SOURCE_YTDLP,
+                        "confidence": CONFIDENCE_MEDIUM,
+                        "language": "en",
+                        "snippet_count": len(snippets),
+                        "text": full_text,
+                        "snippets": [{"text": s, "start": 0, "duration": 0} for s in snippets],
+                    }
+            except (OSError, UnicodeDecodeError):
+                continue
 
     for cleanup_sf in glob_mod.glob(f"/tmp/yt_{video_id}.*"):
         try:
