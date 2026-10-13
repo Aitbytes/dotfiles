@@ -43,7 +43,12 @@ No hardcoded tokens, no root in env — ever. Root is break-glass only
 
 1. Valid `VAULT_TOKEN` / token helper → used as-is (interactive users)
 2. Otherwise AppRole `agent-workstation` mints a 30-min token (policy
-   `agents` = read-only on `blithe/*`, `cloudflare/*`, `cli-envs/*`)
+   `agents` = read-only on `blithe/*`, `cloudflare/*`, `cli-envs/*`,
+   PLUS full write on the scratch zone `kv-v2/blithe/agents-scratch/*`)
+   — note: on Vault 2.1.x the `auth/approle/role/<name>/login` route
+   answers "unsupported path"; the working login endpoint is the legacy
+   `auth/approle/login` (role_id + secret_id), which is what this
+   script uses
 3. `role_id` (not secret): `~/.config/vault/approle-role-id`
 4. `secret_id` (30 d TTL): OS keyring via `secret-tool` (symlinked in
    `~/.local/bin`, served by kwalletd6), fallback 0600 file

@@ -39,19 +39,24 @@ chmod +x ~/.local/bin/linkedin-dm
 export LINKEDIN_COOKIE_HEADER='li_at=...; JSESSIONID="ajax:..."; bcookie=...'
 ```
 
-### Vault users — cookie export workaround
+### Vault (agent path — 2026-10-13)
 
-`vault-env` may break the cookie due to special characters (`;`, `=`, `"`). Use the raw Vault CLI:
+Cookie lives at `kv-v2/blithe/agents-scratch/linkedin` (agent-WRITABLE path — the renewal
+loop is fully agent-drivable: steel login → CDP harvest → vault put, user only taps 2FA).
 
 ```bash
-export LINKEDIN_COOKIE_HEADER="$(vault kv get -field=LINKEDIN_COOKIE_HEADER kv-v2/cli-envs/linkedin)"
+export LINKEDIN_COOKIE_HEADER="$(~/.opencode/tools/env-guard.sh linkedin)"
+linkedin-dm list --json --unread
 ```
 
-### Cookie file alternative
+`env-guard linkedin` does the AppRole login + field read and prints the raw header
+(command-substitution safe — no eval, no special-char mangling).
+
+Legacy path `kv-v2/cli-envs/linkedin` was lost in the 2026-10-13 vault rebuild; agents-scratch
+is the live location. Raw Vault CLI still works for interactive users:
 
 ```bash
-vault kv get -field=LINKEDIN_COOKIE_HEADER kv-v2/cli-envs/linkedin > /tmp/cookie.txt
-linkedin-dm --cookie-file /tmp/cookie.txt list --json
+export LINKEDIN_COOKIE_HEADER="$(vault kv get -field=LINKEDIN_COOKIE_HEADER kv-v2/blithe/agents-scratch/linkedin)"
 ```
 
 ## Usage
@@ -102,7 +107,7 @@ Uses [`linkedingo`](https://github.com/mautrix/linkedin/tree/main/pkg/linkedingo
 - **No send support**: read-only — use the LinkedIn web app to reply
 - **Cookie expires ~24h**: LinkedIn sessions are short-lived
 - **No real-time**: each `read` is a full HTTP request (no SSE streaming)
-- **vault-env compatibility**: `source vault-env linkedin` may silently drop `LINKEDIN_COOKIE_HEADER` due to special characters; use the raw Vault CLI instead
+- **vault-env compatibility**: `source vault-env linkedin` may silently drop `LINKEDIN_COOKIE_HEADER` due to special characters; use `env-guard linkedin` or the raw Vault CLI instead
 
 ## References
 
