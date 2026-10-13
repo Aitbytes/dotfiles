@@ -67,6 +67,24 @@ DIRECT POLICY (when NOT to use the proxy):
     auto-fall back to direct on slow/dead proxy. No manual action needed.
 EOF
     ;;
+  linkedin)
+    # Prints the RAW cookie header on stdout (command-substitution safe).
+    # Usage:  export LINKEDIN_COOKIE_HEADER="$(env-guard linkedin)"
+    # Requires: AppRole bootstrap (role-id file + keyring secret_id) — the
+    # agent auth path; interactive users can also vault login and read directly.
+    set -a; [ -r "${HOME}/.config/vault/VAULT_ADDR" ] && . "${HOME}/.config/vault/VAULT_ADDR"; set +a
+    export VAULT_ADDR="${VAULT_ADDR:-https://hashi-vault.aitbytes.fyi}"
+    RID=$(cat "$HOME/.config/vault/approle-role-id")
+    SID=$(secret-tool lookup service vault-env username approle-secret-id) \
+      || SID=$(cat "$HOME/.config/vault/approle-secret-id")
+    TOK=$(env -u VAULT_TOKEN vault write -field=token auth/approle/login \
+      role_id="$RID" secret_id="$SID" 2>/dev/null)
+    [ -n "${TOK:-}" ] || { echo "env-guard: approle login failed" >&2; exit 2; }
+    COOKIE=$(VAULT_TOKEN="$TOK" vault kv get -field=LINKEDIN_COOKIE_HEADER \
+      kv-v2/blithe/agents-scratch/linkedin 2>/dev/null)
+    [ -n "${COOKIE:-}" ] || { echo "env-guard: cookie empty — renew (see runbook linkedin-cookie)" >&2; exit 3; }
+    printf '%s' "$COOKIE"
+    ;;
   renew)
     id="${2:-}"
     [ -z "$id" ] && { echo "usage: env-guard renew <credential-id>" >&2; exit 1; }
