@@ -1,6 +1,6 @@
 ---
 name: reddit-research
-description: Reddit-specific research tactics — reddit_scraper.py mastery, subreddit selection strategy, evidence quality thresholds, bias handling, and community-signal output format
+description: "STANDBY (2026-10-13): Reddit programmatic auth is dead — read the banner before anything. Methodology inside (subreddit strategy, confidence thresholds, output format) stays valid for reactivation. Community signal meanwhile: TheRedArchive via steel, YouTube, web forums."
 ---
 
 ## STATUS: STANDBY (2026-10-13)
