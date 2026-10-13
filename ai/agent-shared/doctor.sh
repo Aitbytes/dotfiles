@@ -63,7 +63,7 @@ fi
 if timeout 60 uv run --with requests --with certifi --with beautifulsoup4 python3 ~/.opencode/tools/web_scraper.py --help >/dev/null 2>&1; then line ok "web_scraper: deps ok via documented wrapper"; else line FAIL "web_scraper: deps broken (bs4?)"; fi
 
 # 6f. steel venv websocket-client (steel_cdp.py dependency)
-"~/.agents/skills/steel-browser/.venv/bin/python" -c "import websocket" >/dev/null 2>&1 && line ok "steel venv: websocket-client ok" || line FAIL "steel venv: websocket-client missing (rebuild venv)"
+"$HOME/.agents/skills/steel-browser/.venv/bin/python" -c "import websocket" >/dev/null 2>&1 && line ok "steel venv: websocket-client ok" || line FAIL "steel venv: websocket-client missing (rebuild venv)"
 
 # 7. playwright-cli
 V=$(timeout 30 npx --no-install @playwright/cli --version 2>/dev/null)
