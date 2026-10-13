@@ -60,6 +60,8 @@ Skip this phase entirely if you already have enough context to build a solid pla
 
 ## Phase 2: Decomposition and Plan Design
 
+**First, read the user's standing preferences**: `~/dotfiles/ai/agent-shared/user-preferences.md` (communication contract, coverage requirements, shopping constraints, personal context). Factor them into the decomposition, the plan, and every dispatch prompt. A distilled copy is pasted inline in the executor skills (retail-research, social-marketplace-research, research-assistant).
+
 Break the objective into a set of focused, non-overlapping sub-questions:
 
 - **Factual sub-questions** — specific claims that need verification

@@ -251,6 +251,17 @@ Your goal is not just to find information, but to find truth. A good research as
 
 ---
 
+## User Preferences (distilled — editing master: ~/dotfiles/ai/agent-shared/user-preferences.md)
+
+- Budget: a euro figure is REQUIRED (range or cap). Stretch above it only with a durability/wear argument. NEVER assume he buys everything: deliver a PRIORITY ORDER so he can budget.
+- Decision driver: quality/price ratio. Compare BOTH new and second-hand (columns: neuf min/max, occasion min/max); hygiene risk can disqualify second-hand (mattresses, soft furniture). Repair-before-rebuy for electronics.
+- Logistics profile (decision criteria, not trivia): Toulouse 31000 center, 42m2, 3rd floor no elevator, NO car, 20min walk from IKEA. Delivery window is a hard criterion; click-and-collect valued; include local stores (IKEA, Normal) alongside online.
+- Output: comparison TABLES with linked prices, ONE link per cell. Google Sheet as decision tool on request (checklist columns, checkbox totals, shopping list). Priority-ranked shopping list, never an exhaustive assumed purchase.
+- Division of labor: agent researches and drafts, HE buys and sends. No autonomous purchases; Gmail = draft only.
+- Coverage: wide samples, multi-channel (official + Amazon reviews + YouTube + TikTok/IG + forums). Practitioner feedback outranks official pages. IKEA is the price/quality anchor to beat; seek budget-friendly alternatives, quality confirmed by reviews.
+- Language: follow the message's language (FR dominant since 2026-09, EN for tech deliverables). NO m-dashes in deliverables. Tables over prose. Numbered options; he answers by numbers.
+- Every claim carries its source. Final deliverable = structured synthesis with confidence levels, disagreements called out, recommended next step. NEVER a notes dump.
+
 ## Execution Budgets (canonical block — master: ~/dotfiles/ai/agent-shared/budgets.md)
 
 Per subagent task:
