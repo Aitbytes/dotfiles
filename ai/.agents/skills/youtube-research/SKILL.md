@@ -38,17 +38,15 @@ uv run --with requests --with certifi --with youtube-transcript-api \
   python3 ~/.opencode/tools/youtube.py transcript "VIDEO_ID_OR_URL" [--languages en]
 ```
 
-The `--format json` flag (default) or `--format md` controls the output format.
-The tool's known issues and architecture are documented in `~/.opencode/tools/README.md`.
-
 ### Performance & Proxy
 
 The tool auto-detects slow proxies (latency > 3s) and switches to direct mode for remaining
 requests within the same invocation, printing a notice to stderr. A `search --limit 10` takes
 ~15s (auto-fallback) vs ~50s (stuck on slow proxy).
 
-If the proxy is completely dead (not just slow), the existing error-based direct fallback
-kicks in. As a last resort, append `--proxy-mode direct` to bypass the proxy entirely.
+Proxy (iProyal, `~/.config/proxy-conf`) is ACTIVE as of 2026-10-13 — policy lives in
+`~/.opencode/tools/env-guard.sh` (`proxy` / `proxy-fr` / `direct`). The tool handles
+proxy/fallback automatically via `proxy_mode="auto"`; no manual prefix needed.
 
 ---
 
@@ -64,7 +62,7 @@ uv run --with requests --with certifi \
 Returns ranked results with titles, channels, URLs, caption availability, duration, and relevance scores. Use when the user provides a topic but no specific video URL.
 **Never run in parallel** — always one query at a time, wait for result.
 
-**Timeout note:** A `--limit 10` search makes ~11 sequential HTTP requests (1 search + up to 10 watch pages). Plan for ~15-20s with the auto-fallback, or ~50s+ if stuck on proxy. Use `--proxy-mode direct` if the tool appears to hang.
+**Timeout note:** A `--limit 10` search makes ~11 sequential HTTP requests (1 search + up to 10 watch pages). Plan for ~15-20s. (Direct connection since proxy retirement 2026-10-13.)
 
 ### `resolve` — Video Metadata
 
@@ -93,7 +91,7 @@ uv run --with requests --with certifi --with youtube-transcript-api \
 
 Extracts the transcript from a video. The tool tries `youtube-transcript-api` (primary, high confidence) then `yt-dlp` subtitle extraction (fallback, medium confidence). Returns `status=ok` with `source` and `confidence` on success; `status=error` if all providers fail.
 
-Note: if `~/.config/proxy-conf` contains a dead proxy, transcript extraction will fail silently. In that case, strip proxy env vars first:
+Note: transcript extraction can fail if the proxy is temporarily dead (silent empty output). The tool auto-falls back to direct; as a last resort force it:
 
 ```
 HTTP_PROXY= HTTPS_PROXY= \

@@ -3,6 +3,22 @@ name: reddit-research
 description: Reddit-specific research tactics — reddit_scraper.py mastery, subreddit selection strategy, evidence quality thresholds, bias handling, and community-signal output format
 ---
 
+## STATUS: STANDBY (2026-10-13)
+
+Reddit programmatic authentication changed and no longer supports the old
+API-key path — `reddit_scraper.py` (praw client-credentials) is UNRELIABLE.
+**Do not run it. Do not try to fix or re-seed its credentials.**
+
+Community signal while on standby:
+- Web search + `web_scraper.py` on public thread pages (datacenter IP may still be blocked — report, don't retry)
+- Archived TRP/seduction subreddits: `steel-browser` TheRedArchive playbooks (fully working)
+- Long-form alternative: `youtube-research`
+
+This skill's methodology (subreddit strategy, confidence thresholds, output
+format) remains valid for reactivation; only the tool invocation is frozen.
+
+---
+
 ## Persona Activation
 
 When this skill is loaded, you are operating as a **Reddit Research Specialist**. Reddit is your primary evidence surface. Treat it as anecdotal signal — useful for patterns, real-world friction, and community consensus — not as proof. Your job is to extract useful signal without overstating what Reddit can prove.
@@ -36,11 +52,9 @@ REDDIT_USER_AGENT=your_user_agent_string
 ```
 Create a script app at https://www.reddit.com/prefs/apps.
 
-**Proxy workaround:** if `~/.config/proxy-conf` contains a dead proxy, prefix with:
-```bash
-HTTP_PROXY= HTTPS_PROXY= uv run --with requests --with certifi --with praw --with python-dotenv \
-  python3 ~/.opencode/tools/reddit_scraper.py ...
-```
+**Proxy (ACTIVE 2026-10-13):** iProyal residential, config at `~/.config/proxy-conf`.
+Python tools handle it automatically (`proxy_mode=auto` + direct fallback). Manual one-off:
+`eval "$(~/.opencode/tools/env-guard.sh proxy)"`. FR-geo recipe (leboncoin unlock): `~/.opencode/tools/env-guard.sh proxy-fr`. Policy details: `~/.opencode/tools/env-guard.sh direct`.
 
 ---
 

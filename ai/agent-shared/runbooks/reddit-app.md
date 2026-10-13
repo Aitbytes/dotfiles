@@ -1,5 +1,9 @@
 # Runbook: reddit-app credentials
 
+> **STATUS: STANDBY (2026-10-13)** — Reddit programmatic auth changed; the
+> client-credentials path is unreliable. Do not re-seed or reactivate without
+> an explicit user decision. Kept for the day Reddit is re-enabled.
+
 **Registry id**: `reddit-app` · **Class**: static · **Vault**: `kv-v2/cli-envs/reddit`
 **Consumers**: `~/.opencode/tools/reddit_scraper.py`, skill `reddit-research`, skill `retail-research` (Wave 3)
 **Fields**: `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USER_AGENT`
