@@ -94,6 +94,7 @@ All through the `terminal` tool, from any cwd (scripts resolve their own path):
 - none currently — all explored retail sites are either extracted or documented as blocked
 
 ### Social (verified 2026-08-16)
+- **Run scripts with the skill venv ONLY**: `~/.agents/skills/steel-browser/.venv/bin/python scripts/steel_cdp.py ...` (websocket-client preinstalled). NEVER via `uv run --with websocket-client ...`: uv re-resolves deps on EVERY call (session 01a13742 paid this tax 25 times).
 - **TikTok transcripts**: `transcript <video-url>` — reads `__UNIVERSAL_DATA_FOR_REHYDRATION__` JSON → `video.subtitleInfos` → fetches the WebVTT (via page-context fetch; needs TikTok referer). Works only when TikTok's ASR generated captions (~1 in 5 videos; `subtitle_tracks` field shows what exists). Timestamps stripped to plain text.
 - **Facebook public pages** (`facebook.com/<page>/`): posts via `div[role="article"]` — text, author, rough timestamp. Login form is present but public page content still renders. Marketplace: requires login, don't bother. Video transcripts: not available logged-out (login required).
 - **Instagram profiles** (`instagram.com/<handle>/`): handle, follower/following stats, bio, up to ~8 post links (`a[href*="/p/"]`). No login wall for profile pages. Reels: video plays logged-out (blob: src) but no caption/transcript data in DOM — transcripts need login.

@@ -141,6 +141,14 @@ For each recommended product:
 
 ---
 
+### Web search pattern (no `search` subcommand exists)
+
+```bash
+uv run --with requests --with certifi --with beautifulsoup4 python3 ~/.opencode/tools/web_scraper.py \
+  --url "https://duckduckgo.com/html/?q=<urlencoded-query>" --mode text --timeout 30
+```
+(Do not invent a `search` subcommand - it fails; session 01a13742 wasted 2 calls on it.)
+
 ## Plan Visibility (anti-stall)
 
 Before ANY tool call, output a short plan message: the 4 waves and what each will produce, in 3-6 lines. The user must see
