@@ -59,6 +59,9 @@ if [ -n "$P" ]; then
   echo "$CFR" | grep -q 'France' && line ok "proxy FR-exit: France confirmed (_country-fr)" || line FAIL "proxy FR-exit: got '${CFR:-nothing}' — leboncoin unlock compromised"
 fi
 
+# 6e. web_scraper.py (the documented wrapper needs requests+certifi+bs4)
+if timeout 60 uv run --with requests --with certifi --with beautifulsoup4 python3 ~/.opencode/tools/web_scraper.py --help >/dev/null 2>&1; then line ok "web_scraper: deps ok via documented wrapper"; else line FAIL "web_scraper: deps broken (bs4?)"; fi
+
 # 7. playwright-cli
 V=$(timeout 30 npx --no-install @playwright/cli --version 2>/dev/null)
 [ -n "$V" ] && line ok "playwright-cli: $V" || line FAIL "playwright-cli: not runnable"

@@ -86,7 +86,8 @@ uv run --with requests --with certifi \
 
 # Web scraping
 uv run --with requests --with certifi --with beautifulsoup4 \
-  python3 ~/.opencode/tools/web_scraper.py --url "https://example.com" --mode markdown
+  uv run --with requests --with certifi --with beautifulsoup4 \
+    python3 ~/.opencode/tools/web_scraper.py --url "https://example.com" --mode markdown
 ```
 
 ### One-off Inline Tools (via `uv run --with <pkg> python -c`)

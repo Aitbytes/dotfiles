@@ -3,7 +3,8 @@
 Web Scraper CLI - Fetch and extract text/data from any public URL.
 
 Usage:
-  python3 web_scraper.py --url "https://example.com"
+  uv run --with requests --with certifi --with beautifulsoup4 python3 web_scraper.py --url "https://example.com"
+  (deps: requests, bs4 — always run through the uv wrapper above)
   python3 web_scraper.py --url "https://example.com" --selector "h1,p,table"
   python3 web_scraper.py --url "https://example.com" --mode text --output result.md
 

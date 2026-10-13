@@ -141,6 +141,13 @@ For each recommended product:
 
 ---
 
+## Plan Visibility (anti-stall)
+
+Before ANY tool call, output a short plan message: the 4 waves and what each will produce, in 3-6 lines. The user must see
+where this is going within the first minute or he aborts the run (observed 2026-10-13,
+session 01a13724: 3 min of silent tool-checking = aborted). Do NOT pre-verify every tool
+exists; skill paths are maintained and doctor.sh covers health. Dispatch.
+
 ## User Preferences (distilled — editing master: ~/dotfiles/ai/agent-shared/user-preferences.md)
 
 - Budget: a euro figure is REQUIRED (range or cap). Stretch above it only with a durability/wear argument. NEVER assume he buys everything: deliver a PRIORITY ORDER so he can budget.
