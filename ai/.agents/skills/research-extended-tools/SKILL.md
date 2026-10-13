@@ -197,7 +197,7 @@ print(' '.join(s.text for s in segments))
 | `hcpcs_lookup.py` | `--with requests --with certifi` |
 | `startup_data.py` | `--with requests --with certifi` |
 | `eudamed_lookup.py` | `--with requests --with certifi` |
-| `reddit_scraper.py` | `--with requests --with certifi --with praw --with python-dotenv` |
+| `reddit_scraper.py` | `--with requests --with certifi --with praw --with python-dotenv` — **STANDBY 2026-10-13, do not run** |
 
 **Proxy workaround** (when `~/.config/proxy-conf` contains a dead proxy):
 prefix all commands with `HTTP_PROXY= HTTPS_PROXY= ` to strip proxy vars.

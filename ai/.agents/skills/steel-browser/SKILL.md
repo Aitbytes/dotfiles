@@ -13,6 +13,11 @@ metadata:
 
 # Steel Browser Skill
 
+> **Status layer**: `~/.agents/skills/steel-browser/sites.json` is the machine-readable
+> status authority for ALL sites (including non-Steel ones). This file stays the
+> human/agent-readable playbook layer. After any wall/block/verdict change, update the
+> row in sites.json (status, wall_type, last_verified). Rows older than 90 days = unknown.
+
 Drive the self-hosted Steel browser (Docker stack `steel` on `admin@192.168.1.50`) over raw CDP to fetch pages, extract structured data, and take screenshots — including JS-heavy sites that plain HTTP fetches cannot handle.
 
 ## When to Use

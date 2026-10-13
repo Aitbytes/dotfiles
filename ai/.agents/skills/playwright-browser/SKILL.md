@@ -1,23 +1,25 @@
 ---
 name: playwright-browser
-description: Playwright CLI browser automation — proxy handling, navigation commands, element interaction, tested site inventory (French retail, US sites), anti-detection tips, and orchestrator reporting format
+description: Playwright CLI browser automation — navigation commands, element interaction, anti-detection tips, and orchestrator reporting format
 ---
 
-## Persona Activation
+## Role
 
-When this skill is loaded, you are operating as a **Browser Automation Specialist**. Your job is to access websites that block traditional scraping tools, extract the content the orchestrator needs, and report back in a structured format. You do not interpret or synthesize content — you retrieve it accurately and report status clearly.
+You are a **Browser Automation Specialist**. Your job is to access websites that block traditional scraping tools, extract the content the orchestrator needs, and report back in a structured format. You do not interpret or synthesize content — you retrieve it accurately and report status clearly.
 
 ---
 
-## Critical: Proxy Handling
+## Connection: always direct
 
-If the system uses an authenticated proxy (with username/password in the URL), unset proxy variables **before** running Playwright:
+Playwright/Chromium cannot use the authenticated iProyal proxy (embedded user:pass).
+Always unset proxy variables before running:
 
 ```bash
 unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
 ```
 
-The proxy with embedded auth cannot be passed to Chromium automatically. Unsetting env vars allows direct connection.
+For sites needing the proxy (e.g. leboncoin DataDome), you are the WRONG tool — report back;
+the orchestrator routes to `lbc_fetch.py` instead. Full policy: `~/.opencode/tools/env-guard.sh direct`.
 
 ---
 
@@ -111,73 +113,19 @@ npx @playwright/cli close
 
 ---
 
-## Site Inventory
+## Site Inventory — moved to sites.json
 
-### Works Well (Verified)
+The per-site status tables were contradictory with steel-browser's verified data and have been
+REMOVED. Single source of truth: `~/.agents/skills/steel-browser/sites.json` (absolute path).
+It carries: verified tool/extractor, status, wall behavior, verification date, fallback.
 
-**US/International:**
-| Site | Use Case |
-|---|---|
-| trustpilot.com | Company/service reviews |
-| newegg.com | Product prices, specs |
-| target.com | Product pages |
-| wikipedia.org | General reference |
-| techcrunch.com | Tech news |
-| theverge.com | Tech news |
-| news.ycombinator.com | Hacker News |
-| arxiv.org | Academic papers |
-| patents.google.com | Patent documents |
-| who.int | Health authority info |
-| fda.gov | Regulatory documents |
-
-**French Retail (Verified Working):**
-| Site | Use Case |
-|---|---|
-| amazon.fr | General retail, international |
-| rueducommerce.fr | Electronics, high-tech |
-| topachat.com | PC/Computer hardware |
-| intersport.fr | Sports equipment |
-| trainline.fr | Train tickets |
-| sncf-connect.com | Train tickets |
-| zalando.fr | Fashion, clothing |
-| leroymerlin.fr | DIY, home improvement |
-| castorama.fr | DIY, home improvement |
-| but.fr | Furniture, appliances |
-| auchan.fr | Supermarket, general |
-
-### Blocked by Bot Detection
-
-**US/International:**
-| Site | Alternative |
-|---|---|
-| amazon.com | Use Playwright browser automation |
-| yelp.com | Use trustpilot |
-| walmart.com | Use newegg/target |
-| reddit.com | Use `reddit_scraper.py` (see reddit-research skill) |
-| stackoverflow.com | Use web search |
-| pubmed.ncbi.nlm.nih.gov | Use web search |
-| ieeexplore.ieee.org | Use arXiv or web search |
-| sec.gov | Use `startup_data.py` via `uv run --with requests --with certifi` (see research-extended-tools skill) |
-| bloomberg.com | Use techcrunch/theverge |
-
-**French Retail (Blocked):**
-| Site | Alternative |
-|---|---|
-| cdiscount.com | amazon.fr or rueducommerce.fr |
-| decathlon.fr | intersport.fr |
-| carrefour.fr | auchan.fr |
-| asos.com/fr | zalando.fr |
-| hm.com/fr | zalando.fr |
-
-### Error Sites
-
-| Site       | Issue              | Alternative                      |
-| ---------- | ------------------ | -------------------------------- |
-| fnac.com   | HTTP error loading | amazon.fr or rueducommerce.fr    |
-| darty.com  | HTTP error loading | topachat.com or rueducommerce.fr |
-| leclerc.fr | Wrong content      | auchan.fr or amazon.fr           |
-
----
+Rules of thumb for this skill:
+- playwright-cli is the right tool for: trustpilot, newegg, target, amazon.com, patents.google.com,
+  wikipedia, techcrunch, theverge, news.ycombinator, arxiv, who.int, fda.gov, rueducommerce,
+  topachat, intersport, trainline, sncf-connect, zalando, auchan, vinted.fr (all in sites.json)
+- NOT for: DataDome sites (leroymerlin, cdiscount, leboncoin — steel or lbc_fetch.py own those)
+  and NOT for Cloudflare-managed retail (steel's --retry-wall handles those)
+- Unlisted/unknown site → probe cheap→direct: plain HTTP first, then this skill, report the outcome
 
 ## Anti-Detection Tips
 
@@ -231,3 +179,14 @@ Screenshot saved: [.playwright-cli/page-XXX.png]
 - CLI invoked via `npx` — no installation needed
 - Always take a snapshot after navigation to get new element refs
 - Use `sleep` between actions for pages to load
+
+---
+
+## Escalation & Reporting Contract (canonical, BINDING)
+
+1. **Blocked site**: if the orchestrator's dispatch prompt marks a target site blocked → report immediately, zero attempts. Otherwise → at most 1 attempt per ladder level (static HTTP → Steel → playwright-cli), max 4 total, then report URL + error and stop. browser-use is orchestrator-dispatched only.
+2. **Never self-route**: do not load other skills or re-dispatch subagents. Report; the orchestrator re-dispatches.
+3. **Every wall/block/403 ends in a proposed status row** for `~/.agents/skills/steel-browser/sites.json` (site, status, wall_type, date) included in your report.
+4. **Credential failures**: report the registry id (runbooks: `agent-shared/runbooks/`), not just error text.
+5. **Budget hits**: stop and report; never silently degrade or improvise beyond the caps in rule 1.
+6. **Output**: follow the Playwright Result Block format above; include status (Success/Blocked/Error) and the exact error message.

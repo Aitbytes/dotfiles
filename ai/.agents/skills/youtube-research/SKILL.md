@@ -179,3 +179,13 @@ Main findings must include:
 - Exact source URLs or video IDs used
 
 **If no usable transcript was obtained**: do not present a normal research summary. Instead, report that transcript extraction failed, list which steps were attempted, and state what user input would unblock the task.
+---
+
+## Escalation & Reporting Contract (canonical, BINDING)
+
+1. **Blocked site**: if the orchestrator's dispatch prompt marks a target site blocked → report immediately, zero attempts. Otherwise → at most 1 attempt per ladder level (static HTTP → Steel → playwright-cli), max 4 total, then report URL + error and stop. browser-use is orchestrator-dispatched only.
+2. **Never self-route**: do not load other skills or re-dispatch subagents. Report; the orchestrator re-dispatches.
+3. **Every wall/block/403 ends in a proposed status row** for `~/.agents/skills/steel-browser/sites.json` (site, status, wall_type, date) included in your report.
+4. **Credential failures**: report the registry id (runbooks: `agent-shared/runbooks/`), not just error text.
+5. **Budget hits**: stop and report; never silently degrade or improvise beyond the caps in rule 1 (youtube-research's own transcript budgets remain the authority for this skill).
+6. **Output**: follow this skill's output/audit format; include transcript/source availability.

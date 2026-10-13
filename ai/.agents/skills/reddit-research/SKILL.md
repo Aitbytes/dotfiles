@@ -44,13 +44,8 @@ uv run --with requests --with certifi --with praw --with python-dotenv \
 
 **Required:** `--niche` — the topic/keyword to search for.
 
-**Environment variables** (set in `.env` or shell before running):
-```
-REDDIT_CLIENT_ID=your_client_id
-REDDIT_CLIENT_SECRET=your_client_secret
-REDDIT_USER_AGENT=your_user_agent_string
-```
-Create a script app at https://www.reddit.com/prefs/apps.
+**Credentials**: none — STANDBY (see banner). On reactivation, load from Vault
+(`source ~/scripts/vault-env reddit`), never from `.env` files.
 
 **Proxy (ACTIVE 2026-10-13):** iProyal residential, config at `~/.config/proxy-conf`.
 Python tools handle it automatically (`proxy_mode=auto` + direct fallback). Manual one-off:
@@ -180,3 +175,13 @@ Based on user-reported context (use case, skill level, budget, etc.).
 - What should be independently verified before acting on Reddit findings
 
 **Representative Quotes**: Include 2–3 verbatim excerpts (with subreddit and score) that best capture the dominant signal.
+---
+
+## Escalation & Reporting Contract (canonical, BINDING)
+
+1. **Blocked site**: if the orchestrator's dispatch prompt marks a target site blocked → report immediately, zero attempts. Otherwise → at most 1 attempt per ladder level (static HTTP → Steel → playwright-cli), max 4 total, then report URL + error and stop. browser-use is orchestrator-dispatched only.
+2. **Never self-route**: do not load other skills or re-dispatch subagents. Report; the orchestrator re-dispatches.
+3. **Every wall/block/403 ends in a proposed status row** for `~/.agents/skills/steel-browser/sites.json` (site, status, wall_type, date) included in your report.
+4. **Credential failures**: report the registry id (runbooks: `agent-shared/runbooks/`), not just error text.
+5. **Budget hits**: stop and report; never silently degrade or improvise beyond the caps in rule 1 (youtube-research's own transcript budgets remain the authority for this skill).
+6. **Output**: follow this skill's output/audit format; include transcript/source availability.

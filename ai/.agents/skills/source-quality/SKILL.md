@@ -86,25 +86,25 @@ For every source, ask:
 ### Finding Contradictions
 
 ```
-google-search_search: "[topic] criticism"
-google-search_search: "[topic] limitations"
-google-search_search: "[topic] controversy"
+web_scraper.py (DDG html): "https://duckduckgo.com/html/?q=<topic>+criticism"
+web_scraper.py (DDG html): "https://duckduckgo.com/html/?q=<topic>+limitations"
+web_scraper.py (DDG html): "https://duckduckgo.com/html/?q=<topic>+controversy"
 ```
 
 ### Finding Supporting Evidence
 
 ```
-google-search_search: "[topic] systematic review"
-google-search_search: "[topic] meta-analysis"
-google-search_search: "[topic] research study"
+web_scraper.py (DDG html): "https://duckduckgo.com/html/?q=<topic>+systematic+review"
+web_scraper.py (DDG html): "https://duckduckgo.com/html/?q=<topic>+meta-analysis"
+web_scraper.py (DDG html): "https://duckduckgo.com/html/?q=<topic>+research+study"
 ```
 
 ### Finding Expert Consensus
 
 ```
-google-search_search: "[topic] expert consensus"
-google-search_search: "[topic] clinical guidelines"
-google-search_search: "[topic] position statement"
+web_scraper.py (DDG html): "https://duckduckgo.com/html/?q=<topic>+expert+consensus"
+web_scraper.py (DDG html): "https://duckduckgo.com/html/?q=<topic>+clinical+guidelines"
+web_scraper.py (DDG html): "https://duckduckgo.com/html/?q=<topic>+position+statement"
 ```
 
 ### Independent Confirmation Rule
