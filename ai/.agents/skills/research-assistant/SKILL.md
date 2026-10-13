@@ -75,73 +75,11 @@ Good research starts with good questions. Do not rush to search — spend time u
 
 ---
 
-## Source Quality Hierarchy
+## Source Quality
 
-Prioritize sources in this order:
-
-### Tier 1 — Highest Quality
-- Peer-reviewed journals (Nature, Science, NEJM, JAMA)
-- Systematic reviews & meta-analyses (Cochrane, Campbell Collaboration)
-- Government & regulatory bodies (WHO, CDC, FDA, SEC, central banks)
-- Academic institutions (Harvard, MIT, Stanford, Oxford) research papers
-- Court opinions & legal precedents
-
-### Tier 2 — High Quality
-- Established news with editorial standards (NYT, WSJ, Guardian, Economist, BBC)
-- Industry standards bodies (IEEE, ISO, W3C, IETF)
-- Professional associations (AMA, ABA, IEEE, ACM)
-- Think tanks with methodological rigor (Brookings, RAND, NBER)
-
-### Tier 3 — Moderate Quality
-- Specialized news outlets (TechCrunch, STAT, FierceHealthcare, Law360)
-- Expert blogs & Substacks with clear author credentials and citations
-- Company documentation (official docs, white papers with methodology)
-- Conference proceedings with peer review
-
-### Tier 4 — Use with Caution
-- General news sites (MSN, Yahoo, HuffPost — variable quality)
-- Wikipedia (good for overviews; verify with primary sources)
-- Reddit/Quora (anecdotal evidence; always verify)
-- Social media (generally unreliable, even from experts)
-
-### Tier 5 — Red Flags
-- Anonymous sources without verification
-- Sponsored content not clearly labeled
-- Clickbait headlines or sensationalist language
-- Sites with obvious bias and no counterpoint
-- Sites selling products related to their claims
-
----
-
-## Source Evaluation Framework
-
-For every source, assess:
-
-### 1. Authority & Expertise
-- Who is the author? What are their credentials?
-- What institution are they affiliated with?
-- Do they have relevant expertise and a track record on this topic?
-
-### 2. Purpose & Incentives
-- Why was this created? Educational, commercial, political?
-- Who funded this research? Does the author have conflicts of interest?
-- Is this advertising in disguise?
-
-### 3. Methodology & Evidence
-- What evidence is presented? Is the methodology sound?
-- Are there citations? Can you verify the claims elsewhere?
-- Are limitations acknowledged?
-
-### 4. Currency & Context
-- When was this published? Has the information changed since?
-- Are there more recent developments that supersede this?
-
-### 5. Objectivity & Balance
-- Is the language neutral or emotional?
-- Are alternative viewpoints presented?
-- Does it acknowledge uncertainty? Is there evidence of cherry-picking?
-
----
+Apply the `source-quality` skill (tier hierarchy, CRAAP-style evaluation, cross-referencing
+techniques, red flags). It is the single authority — this skill adds only the workflow and
+synthesis layers.
 
 ## Research Workflow
 
@@ -293,96 +231,12 @@ These tools are always available — use them directly when the topic warrants t
 
 ---
 
-## Extended Research Tools
+## Extended Tools
 
-### YouTube Video Transcripts
-
-Extract transcripts from YouTube videos using `youtube(action="transcript", video_id_or_url="VIDEO_ID_OR_URL", languages=["en"])`. The tool returns transcript text with provenance and confidence level.
-
-**Note:** Requires video to have captions (manual or auto-generated). Confidence is lower when only auto-generated captions are available.
-
-### PDF Text Extraction
-
-**Tool:** PyMuPDF (fitz) — `uv run --with pymupdf`
-
-```python
-import fitz
-doc = fitz.open("document.pdf")
-text = ""
-for page in doc:
-    text += page.get_text()
-```
-
-**Alternative for tables:** `pdfplumber` (`uv run --with pdfplumber`)
-
-**For scanned PDFs:** run `ocrmypdf input.pdf output.pdf` first to add a text layer.
-
-### ArXiv Paper Access
-
-**Tool:** arxiv (Python) — `uv run --with arxiv`
-
-```python
-import arxiv
-search = arxiv.Search(query="machine learning", max_results=10,
-                      sort_by=arxiv.SortCriterion.Relevance)
-client = arxiv.Client()
-for result in client.results(search):
-    print(f"Title: {result.title}")
-    print(f"ArXiv ID: {result.entry_id}")
-    print(f"PDF: {result.pdf_url}")
-```
-
-**Rate limit:** Add 3-second delay between requests.
-
-### Audio/Video Transcription
-
-**Tool:** faster-whisper — `uv run --with faster-whisper`
-
-```python
-from faster_whisper import WhisperModel
-model = WhisperModel("tiny", device="cpu", compute_type="int8")
-segments, info = model.transcribe("audio.mp3", beam_size=5)
-for segment in segments:
-    print(segment.text)
-```
-
-**Download video audio with yt-dlp:** `uv run --with yt-dlp --with certifi yt-dlp -x --audio-format mp3 -o "audio.%(ext)s" "VIDEO_URL"`
-
-### Data Analysis
-
-**Tool:** DuckDB — `uv run --with duckdb`
-
-```python
-import duckdb
-result = duckdb.sql("SELECT * FROM 'data.csv' WHERE value > 100")
-print(result.df())
-```
-
-### RSS Feed Parsing
-
-**Tool:** feedparser — `uv run --with feedparser`
-
-```python
-import feedparser
-feed = feedparser.parse('https://feeds.bbci.co.uk/news/rss.xml')
-for entry in feed.entries[:5]:
-    print(entry.get('title'), entry.get('link'))
-```
-
-### Web Archive Access
-
-```bash
-uv run --with requests python -c "
-import requests
-r = requests.get('http://archive.org/wayback/available', params={'url': 'example.com'})
-data = r.json()
-if data.get('archived_snapshots', {}).get('closest'):
-    s = data['archived_snapshots']['closest']
-    print(f\"Archived: {s['url']} @ {s['timestamp']}\")
-"
-```
-
----
+PDF extraction, arXiv, audio transcription, DuckDB, RSS, Wayback, wikidata, FDA/patents/HCPCS/
+EUDAMED/startup lookups: all live in the `research-extended-tools` skill (with the correct
+`uv run --with` wrappers per tool). Load it by name when the task warrants; do not restate
+its tool inventory here.
 
 ## Remember
 
@@ -394,3 +248,18 @@ Your goal is not just to find information, but to find truth. A good research as
 - Prefers "I don't know" to speculation
 - Points users to tools and methods for continued research
 - Uses the right tool for the right resource type
+
+---
+
+## Execution Budgets (canonical block — master: ~/dotfiles/ai/agent-shared/budgets.md)
+
+Per subagent task:
+- steel_cdp.py fetch: ≤40 (≤2 attempts/URL; --retry-wall counts as attempt 2)
+- youtube.py: ≤12 searches, ≤8 transcript attempts (on failure, probe the NEXT candidate)
+- playwright-cli: ≤20 interactions total (open/goto/snapshot/click/fill/press)
+- browser-use: ≤30 tool calls (orchestrator-dispatched only)
+- static fetches (curl / web_scraper.py / lbc_fetch.py): ≤12 URLs, ≤3 attempts/URL
+- vault/API scripts (fda_510k, patent_search, hcpcs_lookup, startup_data, eudamed_lookup): ≤10 queries
+
+A budget hit = stop that tool, note it in the Execution Audit block, continue with other
+evidence or report the gap. Never loop past caps. Never silently degrade.

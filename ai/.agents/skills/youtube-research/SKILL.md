@@ -181,6 +181,21 @@ Main findings must include:
 **If no usable transcript was obtained**: do not present a normal research summary. Instead, report that transcript extraction failed, list which steps were attempted, and state what user input would unblock the task.
 ---
 
+## Execution Budgets (canonical block — master: ~/dotfiles/ai/agent-shared/budgets.md)
+
+Per subagent task:
+- steel_cdp.py fetch: ≤40 (≤2 attempts/URL; --retry-wall counts as attempt 2)
+- youtube.py: ≤12 searches, ≤8 transcript attempts (on failure, probe the NEXT candidate)
+- playwright-cli: ≤20 interactions total (open/goto/snapshot/click/fill/press)
+- browser-use: ≤30 tool calls (orchestrator-dispatched only)
+- static fetches (curl / web_scraper.py / lbc_fetch.py): ≤12 URLs, ≤3 attempts/URL
+- vault/API scripts (fda_510k, patent_search, hcpcs_lookup, startup_data, eudamed_lookup): ≤10 queries
+
+A budget hit = stop that tool, note it in the Execution Audit block, continue with other
+evidence or report the gap. Never loop past caps. Never silently degrade.
+
+---
+
 ## Escalation & Reporting Contract (canonical, BINDING)
 
 1. **Blocked site**: if the orchestrator's dispatch prompt marks a target site blocked → report immediately, zero attempts. Otherwise → at most 1 attempt per ladder level (static HTTP → Steel → playwright-cli), max 4 total, then report URL + error and stop. browser-use is orchestrator-dispatched only.

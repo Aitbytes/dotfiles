@@ -131,6 +131,29 @@ For each recommended product:
 - Account for: shipping, taxes, return policies, seller reliability
 - Confidence level and what remains uncertain
 
+### Execution Audit
+- Tool attempts: steel N, youtube N, playwright N, static N, api N
+- Budget hits: [tool + cap] or none
+- Walls hit: [site — wall_type — URL] or none
+- Proposed sites.json rows: [site | status | wall_type | date] or none
+- Gaps: [what wasn't covered and why]
+
+
+---
+
+## Execution Budgets (canonical block — master: ~/dotfiles/ai/agent-shared/budgets.md)
+
+Per subagent task:
+- steel_cdp.py fetch: ≤40 (≤2 attempts/URL; --retry-wall counts as attempt 2)
+- youtube.py: ≤12 searches, ≤8 transcript attempts (on failure, probe the NEXT candidate)
+- playwright-cli: ≤20 interactions total (open/goto/snapshot/click/fill/press)
+- browser-use: ≤30 tool calls (orchestrator-dispatched only)
+- static fetches (curl / web_scraper.py / lbc_fetch.py): ≤12 URLs, ≤3 attempts/URL
+- vault/API scripts (fda_510k, patent_search, hcpcs_lookup, startup_data, eudamed_lookup): ≤10 queries
+
+A budget hit = stop that tool, note it in the Execution Audit block, continue with other
+evidence or report the gap. Never loop past caps. Never silently degrade.
+
 ---
 
 ## Escalation & Reporting Contract (canonical, BINDING)
