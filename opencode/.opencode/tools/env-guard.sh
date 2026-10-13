@@ -5,9 +5,10 @@
 #   env-guard proxy         export HTTP_PROXY/HTTPS_PROXY for curl / one-off commands
 #   env-guard proxy-fr      print the FR-geo recipe (password suffix + curl_cffi) — the leboncoin unlock
 #   env-guard direct        explain when to go direct (playwright can't use the authed proxy)
+#   env-guard linkedin      print the RAW LINKEDIN_COOKIE_HEADER (substitution-safe; approle login included)
 #   env-guard renew <id>    print the renewal runbook for a registered credential
 #
-# Exit codes: 0 ok, 1 bad usage, 2 unknown credential id.
+# Exit codes: 0 ok, 1 bad usage/missing config, 2 approle login failure, 3 cookie empty/missing, 4 unknown credential id.
 
 set -euo pipefail
 PROXY_CONF="$HOME/.config/proxy-conf"
@@ -30,7 +31,8 @@ FR-GEO RESIDENTIAL RECIPE (verified live 2026-10-13, from session 01a1320d):
   flaky on this plan): append `_country-fr` to the password, port 12321:
 
       PW=$(grep -o ':[^:@]*@' ~/.config/proxy-conf | head -1 | tr -d ':@')
-      PROXY="http://MqCAHIXVpSJrZVIA:${PW}_country-fr@geo.iproyal.com:12321"
+      PROXY_USER=$(grep -o 'http://[^:]*' "$HOME/.config/proxy-conf" | head -1 | sed 's|http://||')
+      PROXY="http://${PROXY_USER}:${PW}_country-fr@geo.iproyal.com:12321"
 
   Plain proxy (no suffix) = rotating worldwide exit.
   Port 12322 also accepts the suffix (alternative pass-through).

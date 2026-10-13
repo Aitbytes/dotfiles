@@ -58,3 +58,10 @@ export PATH=$BUN_INSTALL/bin:$PATH
 export NVM_DIR="$HOME/.config/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# Pi
+export PATH="$HOME/.local/bin:$PATH"
+
+# npm global packages
+export PATH="$HOME/.npm-global/bin:$PATH"
+export GHIDRA_INSTALL_DIR="/nix/store/82xcx7qi4djx9ijgmfl4658sw1icj45g-ghidra-11.2.1/lib/ghidra"

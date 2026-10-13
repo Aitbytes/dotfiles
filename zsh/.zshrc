@@ -4,8 +4,7 @@
 setopt autocd              # change directory just by typing its name
 #setopt correct            # auto correct mistakes
 setopt interactivecomments # allow comments in interactive mode
-setopt magicequalsubst     # enable filename expansion for arguments of the form ‘anything=expression’
-setopt nonomatch           # hide error message if there is no match for the pattern
+setopt magicequalsubst     # enable filename expansion for arguments of the form ‘anything=expression’ setopt nonomatch           # hide error message if there is no match for the pattern
 setopt notify              # report the status of background jobs immediately
 setopt numericglobsort     # sort filenames numerically when it makes sense
 setopt promptsubst         # enable command substitution in prompt
@@ -271,8 +270,9 @@ fi
 
 
 
-# Load secret environment variables if the file exists.
-[ -f "$HOME/.config/secret-envs" ] && source "$HOME/.config/secret-envs"
+# Load secrets on-demand from Vault: run  source ~/scripts/vault-env ai-keys
+# Or for everything:  source ~/scripts/vault-env --all
+[ -f "$HOME/scripts/vault-env" ] && alias venv='source ~/scripts/vault-env'
 
 # Load aliases and shortcuts if existent.
 [ -f "$HOME/.config/shortcutrc" ] && source "$HOME/.config/shortcutrc"
@@ -531,4 +531,8 @@ if [ "$funcstack[1]" = "_kubectl" ]; then
     _kubectl
 fi
 
+export PATH=$PATH:/home/a8taleb/.local/bin
+
+# npm global packages
+export PATH="$HOME/.npm-global/bin:$PATH"
 
