@@ -1,6 +1,6 @@
 ---
 name: playwright-browser
-description: Playwright CLI browser automation — navigation commands, element interaction, anti-detection tips, and orchestrator reporting format
+description: "USE WHEN a site allows direct Chrome but needs interaction: trustpilot, newegg, target, amazon.com, patents.google.com, vinted.fr, forms and multi-step flows. Always direct connection (cannot use the authenticated proxy). NOT for DataDome/Cloudflare-managed sites (steel-browser or lbc_fetch.py own those) - check steel-browser/sites.json first."
 ---
 
 ## Role

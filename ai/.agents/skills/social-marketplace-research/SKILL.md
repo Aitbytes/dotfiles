@@ -1,6 +1,6 @@
 ---
 name: social-marketplace-research
-description: Unified research across Leboncoin, Vinted, TikTok, Instagram, and Facebook for France-based needs — user reviews, second-hand products, services, and local providers. Verified-tools strategy (lbc_fetch, steel extractors, playwright-cli), multi-source cross-referencing, structured outputs.
+description: "USE WHEN second-hand (leboncoin, vinted), local services/providers, 'ce que la communaute pense de Z', user opinions via TikTok/Instagram/Facebook, occasion vs neuf price floors. leboncoin via lbc_fetch.py (verified unlock), vinted via playwright-cli, social lookups via steel. NOT for new-in-box retail (retail-research) or general research (research-assistant)."
 ---
 
 ## STATUS 2026-10-13 (full rewrite — ghost tools purged)

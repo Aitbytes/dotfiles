@@ -1,6 +1,6 @@
 ---
 name: source-quality
-description: Source quality evaluation framework — tier hierarchy (1-5), CRAAP-style criteria, red flags, and cross-referencing techniques for rigorous research
+description: "USE WHEN grading evidence: tier hierarchy (1-5), CRAAP-style evaluation, cross-referencing rules, disinformation handling. Load alongside research-assistant whenever confidence levels matter (health, finance, decisions). Companion to every research skill."
 ---
 
 ## Source Quality Tier Hierarchy

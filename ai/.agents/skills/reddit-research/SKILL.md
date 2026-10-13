@@ -1,6 +1,6 @@
 ---
 name: reddit-research
-description: "STANDBY (2026-10-13): Reddit programmatic auth is dead — read the banner before anything. Methodology inside (subreddit strategy, confidence thresholds, output format) stays valid for reactivation. Community signal meanwhile: TheRedArchive via steel, YouTube, web forums."
+description: "STANDBY (2026-10-13): Reddit programmatic auth is dead - read the banner before anything. For archived TRP/seduction/MRP subs use steel-browser TheRedArchive playbooks. Community signal meanwhile: social-marketplace-research (TikTok/IG/FB) + youtube-research + web forums. Methodology inside stays valid for reactivation."
 ---
 
 ## STATUS: STANDBY (2026-10-13)

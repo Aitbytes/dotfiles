@@ -1,6 +1,6 @@
 ---
 name: youtube-research
-description: YouTube-specific research tactics — transcript-first workflow, youtube() tool mastery, discovery budgets, evidence evaluation, and audit-block output format
+description: "USE WHEN the answer lives in videos: product reviews, tutorials, tests, conference talks, interviews, 'ce qu'en disent les youtubeurs'. Transcript-first: never summarize a video without its transcript (8-candidate budget, audit block). Cross-references retail-research and social-marketplace-research."
 ---
 
 ## Persona Activation

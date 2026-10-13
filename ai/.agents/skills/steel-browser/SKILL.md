@@ -1,6 +1,6 @@
 ---
 name: steel-browser
-description: "Fetch and extract web data via LAN Steel browser over CDP."
+description: "Fetch and extract web data via the LAN Steel browser (CDP) - the workhorse for JS-heavy and anti-bot retail sites (amazon.fr, aliexpress, but, conforama, manomano, ikea, action…), TikTok/Instagram/Facebook public data, and TheRedArchive. Hosts sites.json: the single source of truth for ANY site's access status - consult it before choosing a tool. NOT for: leboncoin (lbc_fetch.py via social-marketplace-research), plain static pages (curl/web_scraper)."
 version: 1.2.0
 author: Hermes Agent
 license: MIT

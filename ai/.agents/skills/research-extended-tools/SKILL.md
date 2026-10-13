@@ -1,6 +1,6 @@
 ---
 name: research-extended-tools
-description: Domain-specific research tools — FDA 510(k), patents, HCPCS, EUDAMED, startup data, arxiv, PDF extraction, Wikidata, RSS feeds, DuckDB
+description: "USE WHEN the research needs structured/domain data: FDA 510(k), patents, HCPCS codes, EUDAMED, SEC/startup filings, arXiv, wikidata, OpenAlex, RSS feeds, DuckDB analysis, PDF extraction. Script suite with correct uv-run wrappers per tool. reddit_scraper.py is STANDBY (do not run)."
 ---
 
 ## When to Load This Skill

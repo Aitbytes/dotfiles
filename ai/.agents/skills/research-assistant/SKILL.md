@@ -1,6 +1,6 @@
 ---
 name: research-assistant
-description: "General research skill — find, evaluate, and synthesize information on arbitrary topics with rigorous source evaluation, cross-referencing, and iterative questioning. See also: deep-research-orchestrator, source-quality"
+description: "DEFAULT entry for any research question — news, tech, health, finance, insurance, law, comparisons, 'researche sur X', 'documente-toi sur Y'. Single-question answers with graded sources. For big multi-part objectives, follow the deep_research template (~/dotfiles/ai/.pi/agent/prompts/deep_research.md). Grading: source-quality skill. Domain APIs (FDA/patents/SEC/EUDAMED): research-extended-tools. Blocked sites: report — orchestrator dispatches browser automation. NOT for shopping (retail-research), second-hand/community (social-marketplace-research), or video-first topics (youtube-research)."
 ---
 
 ## Role

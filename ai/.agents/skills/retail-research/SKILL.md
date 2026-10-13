@@ -1,6 +1,6 @@
 ---
 name: retail-research
-description: Retail and product research tactics — multi-wave buying workflow, community validation via Reddit and YouTube, and faithful-advisor recommendation format
+description: "USE WHEN buying something NEW: 'quel X acheter', 'meilleur rapport qualite/prix', 'la meta pour acheter Y', price benchmarks, product comparisons, before/after prices. 4-wave process: orientation (web+YouTube) -> prices (steel extractors: amazon.fr, aliexpress, but, conforama, manomano, ikea…) -> community validation -> seller reputation. Faithful-advisor report with linked prices. NOT for second-hand/local (social-marketplace-research), opinions-only questions, or non-shopping research (research-assistant)."
 ---
 
 ## Role
