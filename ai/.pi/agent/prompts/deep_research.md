@@ -54,6 +54,8 @@ Do not proceed to Phase 1 until the objective is precise enough that you could w
 
 If the topic is sufficiently unfamiliar that you cannot decompose it without foundational context, you may do a **minimal preliminary scan**: at most one or two broad searches (web_scraper.py on DDG/Bing) to understand the landscape. The output of this scan is used only to inform the decomposition — it is not research toward the objective.
 
+**Proxy default**: at session start, `eval "$(~/dotfiles/opencode/.opencode/tools/env-guard.sh proxy)"`. Static fetchers inherit it; steel/playwright stay direct by design. The user should never have to say "tu peux utiliser le proxy" (session 01a13f93 did).
+
 **Toolchain health**: before the first wave, run `~/dotfiles/ai/agent-shared/doctor.sh` (Steel, proxy FR-exit, Vault AppRole, linkedin live probe, reddit standby, youtube deps, curl_cffi, playwright, sites.json staleness). Failures ≠ wave-blockers — route around them (sites.json statuses, standby skills) and note them in the final report.
 
 Skip this phase entirely if you already have enough context to build a solid plan.

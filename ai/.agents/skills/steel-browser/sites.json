@@ -407,10 +407,10 @@
       "tool": null,
       "extractor": null,
       "status": "blocked",
-      "wall_type": "http_error",
-      "last_verified": null,
+      "wall_type": "datadome_tls",
+      "last_verified": "2026-10-15",
       "fallback": "amazon.fr",
-      "notes": "steel untested — candidate for curl_cffi probe"
+      "notes": "403 BOTH direct and FR-proxy via curl_cffi chrome (2026-10-15 probe); steel blocked (01a13f93). Irrecoverable client-side; fallback amazon.fr + brand-direct sites."
     },
     {
       "site": "darty.com",
@@ -418,10 +418,10 @@
       "tool": null,
       "extractor": null,
       "status": "blocked",
-      "wall_type": "http_error",
-      "last_verified": null,
+      "wall_type": "datadome_tls",
+      "last_verified": "2026-10-15",
       "fallback": "topachat.com",
-      "notes": "steel untested — candidate for curl_cffi probe"
+      "notes": "403 BOTH direct and FR-proxy via curl_cffi chrome (2026-10-15 probe). Fallback topachat.com / amazon.fr."
     },
     {
       "site": "leclerc.fr",
@@ -455,6 +455,17 @@
       "last_verified": null,
       "fallback": "zalando.fr",
       "notes": ""
+    },
+    {
+      "site": "boulanger.com",
+      "url_pattern": "https://www.boulanger.com/result?qt=<q>",
+      "tool": null,
+      "extractor": null,
+      "status": "blocked",
+      "wall_type": "bot_hardening_spa",
+      "last_verified": "2026-10-15",
+      "fallback": "amazon.fr / darty fallback topachat",
+      "notes": "steel datadome-blocked (session 01a13f93); curl_cffi+FR-proxy: home 400/312, search = soft-404 SPA shell 166KB no server-side product data. Do NOT retry via any path."
     }
   ]
 }

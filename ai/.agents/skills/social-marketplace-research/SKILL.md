@@ -130,6 +130,17 @@ Primary: steel-browser public-page extractor (`facebook.com/<page>/` → posts, 
 
 Do not dispatch to these skills yourself — reference in your report; the orchestrator routes.
 
+### FR DataDome trio — DO NOT steel-fetch these (dated 2026-10-15)
+
+boulanger.com, fnac.com, darty.com are hard-blocked EVERY path (steel home-IP, curl_cffi direct,
+curl_cffi FR-proxy). One probe each is one too many: go straight to the fallback ladder
+(amazon.fr / topachat / castorama + the brand's own site via web_scraper) and note the wall.
+Session 01a13f93 burned 3 steel calls rediscovering this.
+
+Search fallback chain when DDG fails (anomaly page, traceback, empty): startpage.com → bing.com
+(both work with the same `--url` pattern). Static fetchers run WITH the FR proxy by default
+(`eval "$(env-guard proxy)"` once per session); web_scraper auto-falls back to direct on slowness.
+
 ### Web search pattern (no `search` subcommand exists)
 
 ```bash
