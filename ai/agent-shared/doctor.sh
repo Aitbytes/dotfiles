@@ -30,7 +30,7 @@ fi
 # 4. LinkedIn cookie: LIVE probe (linkedin-dm status), not just presence
 if [ -n "$TOK" ]; then
   if command -v linkedin-dm >/dev/null 2>&1; then
-    if CK=$(VAULT_TOKEN="$TOK" VAULT_ADDR="$VAULT_ADDR" bash -c 'export LINKEDIN_COOKIE_HEADER="$(env -u VAULT_TOKEN "'"'$HOME'"'/dotfiles/opencode/.opencode/tools/env-guard.sh linkedin" 2>/dev/null || VAULT_TOKEN="$VAULT_TOKEN" vault kv get -field=LINKEDIN_COOKIE_HEADER kv-v2/blithe/agents-scratch/linkedin 2>/dev/null)"; linkedin-dm status' 2>/dev/null) && echo "$CK" | grep -q Authenticated; then
+    if CK=$(VAULT_TOKEN="$TOK" VAULT_ADDR="$VAULT_ADDR" bash -c 'export LINKEDIN_COOKIE_HEADER="$(env -u VAULT_TOKEN "'"'$HOME'"'/dotfiles/ai/tools/env-guard.sh linkedin" 2>/dev/null || VAULT_TOKEN="$VAULT_TOKEN" vault kv get -field=LINKEDIN_COOKIE_HEADER kv-v2/blithe/agents-scratch/linkedin 2>/dev/null)"; linkedin-dm status' 2>/dev/null) && echo "$CK" | grep -q Authenticated; then
       line ok "linkedin: live probe OK ($(echo "$CK" | head -1 | cut -d' ' -f1-4))"
     else
       line warn "linkedin: cookie present but DEAD — renew via runbook linkedin-cookie.md (~2 min, agent-drivable)"
@@ -60,7 +60,7 @@ if [ -n "$P" ]; then
 fi
 
 # 6e. web_scraper.py (the documented wrapper needs requests+certifi+bs4)
-if timeout 60 uv run --with requests --with certifi --with beautifulsoup4 python3 ~/.opencode/tools/web_scraper.py --help >/dev/null 2>&1; then line ok "web_scraper: deps ok via documented wrapper"; else line FAIL "web_scraper: deps broken (bs4?)"; fi
+if timeout 60 uv run --with requests --with certifi --with beautifulsoup4 python3 ~/dotfiles/ai/tools/web_scraper.py --help >/dev/null 2>&1; then line ok "web_scraper: deps ok via documented wrapper"; else line FAIL "web_scraper: deps broken (bs4?)"; fi
 
 # 6f. steel venv websocket-client (steel_cdp.py dependency)
 "$HOME/.agents/skills/steel-browser/.venv/bin/python" -c "import websocket" >/dev/null 2>&1 && line ok "steel venv: websocket-client ok" || line FAIL "steel venv: websocket-client missing (rebuild venv)"

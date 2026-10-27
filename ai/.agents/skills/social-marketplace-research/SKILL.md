@@ -24,7 +24,7 @@ To find handles/pages: web search first (DDG/Bing via web_scraper.py), then look
 ## Load before acting
 
 1. Consult `~/.agents/skills/steel-browser/sites.json` status for target sites (absolute path).
-2. Proxy policy: `~/.opencode/tools/env-guard.sh` (`proxy`, `proxy-fr`, `direct`).
+2. Proxy policy: `~/dotfiles/ai/tools/env-guard.sh` (`proxy`, `proxy-fr`, `direct`).
 3. This skill's escalation contract at the bottom is BINDING.
 
 ## Platform playbooks
@@ -144,7 +144,7 @@ Search fallback chain when DDG fails (anomaly page, traceback, empty): startpage
 ### Web search pattern (no `search` subcommand exists)
 
 ```bash
-uv run --with requests --with certifi --with beautifulsoup4 python3 ~/.opencode/tools/web_scraper.py \
+uv run --with requests --with certifi --with beautifulsoup4 python3 ~/dotfiles/ai/tools/web_scraper.py \
   --url "https://duckduckgo.com/html/?q=<urlencoded-query>" --mode text --timeout 30
 ```
 (Do not invent a `search` subcommand - it fails; session 01a13742 wasted 2 calls on it.)

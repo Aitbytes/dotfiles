@@ -2,7 +2,6 @@
 name: glm-ocr
 description: Perform OCR on PDFs and images using GLM-OCR via ZAI API. Extract text, tables, and layout information with high accuracy.
 license: MIT
-compatibility: opencode
 metadata:
   audience: document-processing-agents
   workflow: ocr

@@ -29,12 +29,12 @@ When this skill is loaded, you are operating as a **Reddit Research Specialist**
 
 ## Tool Invocation
 
-The Reddit tool is `reddit_scraper.py` at `~/.opencode/tools/`. It is invoked via `bash`,
+The Reddit tool is `reddit_scraper.py` at `~/dotfiles/ai/tools/`. It is invoked via `bash`,
 not as a Python function call.
 
 ```bash
 uv run --with requests --with certifi --with praw --with python-dotenv \
-  python3 ~/.opencode/tools/reddit_scraper.py \
+  python3 ~/dotfiles/ai/tools/reddit_scraper.py \
   --niche "TOPIC" \
   [--subreddits "sub1+sub2"] \
   [--terms "term1,term2"] \
@@ -49,7 +49,7 @@ uv run --with requests --with certifi --with praw --with python-dotenv \
 
 **Proxy (ACTIVE 2026-10-13):** iProyal residential, config at `~/.config/proxy-conf`.
 Python tools handle it automatically (`proxy_mode=auto` + direct fallback). Manual one-off:
-`eval "$(~/.opencode/tools/env-guard.sh proxy)"`. FR-geo recipe (leboncoin unlock): `~/.opencode/tools/env-guard.sh proxy-fr`. Policy details: `~/.opencode/tools/env-guard.sh direct`.
+`eval "$(~/dotfiles/ai/tools/env-guard.sh proxy)"`. FR-geo recipe (leboncoin unlock): `~/dotfiles/ai/tools/env-guard.sh proxy-fr`. Policy details: `~/dotfiles/ai/tools/env-guard.sh direct`.
 
 ---
 

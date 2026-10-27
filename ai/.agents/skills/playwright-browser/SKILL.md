@@ -19,7 +19,7 @@ unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
 ```
 
 For sites needing the proxy (e.g. leboncoin DataDome), you are the WRONG tool — report back;
-the orchestrator routes to `lbc_fetch.py` instead. Full policy: `~/.opencode/tools/env-guard.sh direct`.
+the orchestrator routes to `lbc_fetch.py` instead. Full policy: `~/dotfiles/ai/tools/env-guard.sh direct`.
 
 ---
 

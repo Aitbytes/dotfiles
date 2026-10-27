@@ -24,18 +24,18 @@ When this skill is loaded, you are operating as a **YouTube Research Specialist*
 
 ## Tool Invocation
 
-The tool is a standalone Python script at `~/.opencode/tools/youtube.py`. It is invoked via
+The tool is a standalone Python script at `~/dotfiles/ai/tools/youtube.py`. It is invoked via
 `bash`, not as a Python function call. Use `uv run` to provide all required dependencies.
 
 **Always needed:**
 ```
-uv run --with requests --with certifi python3 ~/.opencode/tools/youtube.py <ACTION> ...
+uv run --with requests --with certifi python3 ~/dotfiles/ai/tools/youtube.py <ACTION> ...
 ```
 
 **For the transcript action, also add `youtube-transcript-api`:**
 ```
 uv run --with requests --with certifi --with youtube-transcript-api \
-  python3 ~/.opencode/tools/youtube.py transcript "VIDEO_ID_OR_URL" [--languages en]
+  python3 ~/dotfiles/ai/tools/youtube.py transcript "VIDEO_ID_OR_URL" [--languages en]
 ```
 
 ### Performance & Proxy
@@ -45,7 +45,7 @@ requests within the same invocation, printing a notice to stderr. A `search --li
 ~15s (auto-fallback) vs ~50s (stuck on slow proxy).
 
 Proxy (iProyal, `~/.config/proxy-conf`) is ACTIVE as of 2026-10-13 — policy lives in
-`~/.opencode/tools/env-guard.sh` (`proxy` / `proxy-fr` / `direct`). The tool handles
+`~/dotfiles/ai/tools/env-guard.sh` (`proxy` / `proxy-fr` / `direct`). The tool handles
 proxy/fallback automatically via `proxy_mode="auto"`; no manual prefix needed.
 
 ---
@@ -56,7 +56,7 @@ proxy/fallback automatically via `proxy_mode="auto"`; no manual prefix needed.
 
 ```
 uv run --with requests --with certifi \
-  python3 ~/.opencode/tools/youtube.py search --query "query" [--limit 10]
+  python3 ~/dotfiles/ai/tools/youtube.py search --query "query" [--limit 10]
 ```
 
 Returns ranked results with titles, channels, URLs, caption availability, duration, and relevance scores. Use when the user provides a topic but no specific video URL.
@@ -68,7 +68,7 @@ Returns ranked results with titles, channels, URLs, caption availability, durati
 
 ```
 uv run --with requests --with certifi \
-  python3 ~/.opencode/tools/youtube.py resolve "VIDEO_ID_OR_URL"
+  python3 ~/dotfiles/ai/tools/youtube.py resolve "VIDEO_ID_OR_URL"
 ```
 
 Resolves a video ID or URL to full metadata: title, channel, duration, views, caption languages, description.
@@ -77,7 +77,7 @@ Resolves a video ID or URL to full metadata: title, channel, duration, views, ca
 
 ```
 uv run --with requests --with certifi \
-  python3 ~/.opencode/tools/youtube.py channel "CHANNEL_URL" [--limit 20]
+  python3 ~/dotfiles/ai/tools/youtube.py channel "CHANNEL_URL" [--limit 20]
 ```
 
 Lists recent videos from a YouTube channel URL. Some channels trigger a consent redirect — if the HTML does not contain video IDs, treat that as a content-access failure.
@@ -86,7 +86,7 @@ Lists recent videos from a YouTube channel URL. Some channels trigger a consent 
 
 ```
 uv run --with requests --with certifi --with youtube-transcript-api \
-  python3 ~/.opencode/tools/youtube.py transcript "VIDEO_ID_OR_URL" [--languages en]
+  python3 ~/dotfiles/ai/tools/youtube.py transcript "VIDEO_ID_OR_URL" [--languages en]
 ```
 
 Extracts the transcript from a video. The tool tries `youtube-transcript-api` (primary, high confidence) then `yt-dlp` subtitle extraction (fallback, medium confidence). Returns `status=ok` with `source` and `confidence` on success; `status=error` if all providers fail.
@@ -96,7 +96,7 @@ Note: transcript extraction can fail if the proxy is temporarily dead (silent em
 ```
 HTTP_PROXY= HTTPS_PROXY= \
   uv run --with requests --with certifi --with youtube-transcript-api \
-    python3 ~/.opencode/tools/youtube.py transcript "VIDEO_ID_OR_URL"
+    python3 ~/dotfiles/ai/tools/youtube.py transcript "VIDEO_ID_OR_URL"
 ```
 
 ---
@@ -157,10 +157,10 @@ sinon WS refusé) :
 ```bash
 for id in $IDS; do
   out=$(uv run --with requests --with certifi \
-    python3 ~/.opencode/tools/youtube.py resolve "$id" --format json)
+    python3 ~/dotfiles/ai/tools/youtube.py resolve "$id" --format json)
   if echo "$out" | grep -q '"title": null'; then
     out=$(uv run --with requests --with certifi \
-      python3 ~/.opencode/tools/youtube.py resolve "$id" --format json)  # retry ×1, pas plus
+      python3 ~/dotfiles/ai/tools/youtube.py resolve "$id" --format json)  # retry ×1, pas plus
   fi
   echo "$out" > "resolve_$id.json"
 done
@@ -171,7 +171,7 @@ Titre vide (`title: null` / `# YouTube Video: |`) = retry ×1 maximum, puis note
 
 ### Rappel outil youtube.py (options corrigées 2026-10)
 
-`~/.opencode/tools/youtube.py` reste le premier réflexe (search / resolve / channel / transcript) :
+`~/dotfiles/ai/tools/youtube.py` reste le premier réflexe (search / resolve / channel / transcript) :
 
 - `channel <url> --meta` — ajoute titres + dates de publication en batch (yt-dlp `--flat-playlist -J`,
   puis oEmbed par vidéo pour les titres manquants). Évite ~20 resolves individuels. `list` = alias.

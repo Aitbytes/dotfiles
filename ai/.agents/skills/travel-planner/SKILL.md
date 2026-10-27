@@ -504,8 +504,8 @@ Would you like me to adjust anything in the itinerary?
 ## Technical Notes
 
 **Data Storage:**
-- Preferences: `~/.agents/travel_planner/preferences.json`
-- Trips: `~/.agents/travel_planner/trips.json`
+- Preferences: `~/.local/state/travel-planner/preferences.json`
+- Trips: `~/.local/state/travel-planner/trips.json`
 
 **CLI Commands:**
 ```bash

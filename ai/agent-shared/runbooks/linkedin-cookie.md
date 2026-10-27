@@ -3,7 +3,7 @@
 **Registry id**: `linkedin-cookie` · **Class**: session-cookie, expires ~24 h
 **Vault**: `kv-v2/blithe/agents-scratch/linkedin` (agent-writable since 2026-10-13)
 **Consumer**: `linkedin-dm` CLI, skill `linkedin-dm`
-**Probe**: `export LINKEDIN_COOKIE_HEADER="$(~/.opencode/tools/env-guard.sh linkedin)" && linkedin-dm status`
+**Probe**: `export LINKEDIN_COOKIE_HEADER="$(~/dotfiles/ai/tools/env-guard.sh linkedin)" && linkedin-dm status`
 **Renewal trigger**: probe-driven, NOT calendar — renew on demand when the probe fails.
 **last_rotated**: 2026-10-13 (via steel login + CDP harvest, user 2FA)
 

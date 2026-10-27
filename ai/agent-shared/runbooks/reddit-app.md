@@ -5,7 +5,7 @@
 > an explicit user decision. Kept for the day Reddit is re-enabled.
 
 **Registry id**: `reddit-app` · **Class**: static · **Vault**: `kv-v2/cli-envs/reddit`
-**Consumers**: `~/.opencode/tools/reddit_scraper.py`, skill `reddit-research`, skill `retail-research` (Wave 3)
+**Consumers**: `~/dotfiles/ai/tools/reddit_scraper.py`, skill `reddit-research`, skill `retail-research` (Wave 3)
 **Fields**: `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USER_AGENT`
 **Probe**: `source ~/scripts/vault-env reddit && curl -s -u "$REDDIT_CLIENT_ID:$REDDIT_CLIENT_SECRET" -d grant_type=client_credentials https://www.reddit.com/api/v1/access_token | jq -r '.access_token'`
 **Renewal trigger**: every 90 days, or immediately if the probe fails / Reddit shows the app as revoked.

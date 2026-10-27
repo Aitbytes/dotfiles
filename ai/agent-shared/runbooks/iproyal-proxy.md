@@ -2,7 +2,7 @@
 
 **Registry id**: `iproyal-proxy` · **Class**: managed service credential
 **Config file**: `~/.config/proxy-conf` (chmod 600 — plaintext by necessity: python tools + curl read it directly; the one accepted exception to the no-plaintext rule, documented here)
-**Consumers**: `~/.opencode/tools/*` via `_shared_runtime.load_proxy_config` (auto), `lbc_fetch.py` (explicit), curl one-offs via `env-guard proxy`
+**Consumers**: `~/dotfiles/ai/tools/*` via `_shared_runtime.load_proxy_config` (auto), `lbc_fetch.py` (explicit), curl one-offs via `env-guard proxy`
 **Probe**: `curl -s --proxy "http://$(grep -o 'http://[^"]*' ~/.config/proxy-conf | sed 's|http://||')" http://ip-api.com/json/?fields=country --max-time 30`
 **Renewal trigger**: on probe failure (non-geo plain exit test above) or at iproyal plan renewal — check the iproyal dashboard for the subscription end date; rotate by replacing the password in proxy-conf.
 

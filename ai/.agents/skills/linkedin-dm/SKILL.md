@@ -45,7 +45,7 @@ Cookie lives at `kv-v2/blithe/agents-scratch/linkedin` (agent-WRITABLE path — 
 loop is fully agent-drivable: steel login → CDP harvest → vault put, user only taps 2FA).
 
 ```bash
-export LINKEDIN_COOKIE_HEADER="$(~/.opencode/tools/env-guard.sh linkedin)"
+export LINKEDIN_COOKIE_HEADER="$(~/dotfiles/ai/tools/env-guard.sh linkedin)"
 linkedin-dm list --json --unread
 ```
 

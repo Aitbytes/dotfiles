@@ -32,18 +32,18 @@ Load this skill when your research task involves ANY of:
 
 ## Tool Invocation
 
-All tools are standalone Python scripts at `~/.opencode/tools/`. Invoke them via `bash`
+All tools are standalone Python scripts at `~/dotfiles/ai/tools/`. Invoke them via `bash`
 with `uv run` to provide dependencies. The **Tool Dependency Summary** at the bottom of
 this file lists the correct `uv run --with ...` wrapper for each tool.
 
 General pattern:
 ```bash
-uv run --with <deps> python3 ~/.opencode/tools/<TOOL>.py <args> [--format md|json]
+uv run --with <deps> python3 ~/dotfiles/ai/tools/<TOOL>.py <args> [--format md|json]
 ```
 
 The proxy is ACTIVE (see env-guard proxy). If it ever goes down, strip proxy vars:
 ```bash
-HTTP_PROXY= HTTPS_PROXY= uv run --with <deps> python3 ~/.opencode/tools/<TOOL>.py ...
+HTTP_PROXY= HTTPS_PROXY= uv run --with <deps> python3 ~/dotfiles/ai/tools/<TOOL>.py ...
 ```
 
 ---
@@ -66,28 +66,28 @@ HTTP_PROXY= HTTPS_PROXY= uv run --with <deps> python3 ~/.opencode/tools/<TOOL>.p
 ```bash
 # FDA 510(k) clearance search
 uv run --with requests --with certifi \
-  python3 ~/.opencode/tools/fda_510k.py --query "blood glucose" --limit 20 --format md
+  python3 ~/dotfiles/ai/tools/fda_510k.py --query "blood glucose" --limit 20 --format md
 
 # Patent search
 uv run --with requests --with certifi \
-  python3 ~/.opencode/tools/patent_search.py --query "neural network" --country US --limit 10
+  python3 ~/dotfiles/ai/tools/patent_search.py --query "neural network" --country US --limit 10
 
 # HCPCS code lookup
 uv run --with requests --with certifi \
-  python3 ~/.opencode/tools/hcpcs_lookup.py --search "laryngectomy" --source both --format md
+  python3 ~/dotfiles/ai/tools/hcpcs_lookup.py --search "laryngectomy" --source both --format md
 
 # EUDAMED device search
 uv run --with requests --with certifi \
-  python3 ~/.opencode/tools/eudamed_lookup.py --query "implant" --limit 20 --format md
+  python3 ~/dotfiles/ai/tools/eudamed_lookup.py --query "implant" --limit 20 --format md
 
 # Startup / SEC EDGAR data
 uv run --with requests --with certifi \
-  python3 ~/.opencode/tools/startup_data.py --company "Tesla" --source edgar --format md
+  python3 ~/dotfiles/ai/tools/startup_data.py --company "Tesla" --source edgar --format md
 
 # Web scraping
 uv run --with requests --with certifi --with beautifulsoup4 \
   uv run --with requests --with certifi --with beautifulsoup4 \
-    python3 ~/.opencode/tools/web_scraper.py --url "https://example.com" --mode markdown
+    python3 ~/dotfiles/ai/tools/web_scraper.py --url "https://example.com" --mode markdown
 ```
 
 ### One-off Inline Tools (via `uv run --with <pkg> python -c`)

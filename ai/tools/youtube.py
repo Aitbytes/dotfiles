@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 import urllib.parse
+from datetime import datetime, timezone
 from typing import Any
 
 sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
@@ -238,7 +239,158 @@ def resolve(video_id_or_url: str, timeout: int = 20, proxy_mode: str = "auto") -
     return {"status": "ok", **metadata}
 
 
-def channel_videos(channel_url: str, limit: int = 20, timeout: int = 20, proxy_mode: str = "auto") -> dict[str, Any]:
+def _oembed_meta(video_id: str, timeout: int = 10, proxy_mode: str = "auto") -> dict[str, Any] | None:
+    """Resolve title (+author) for one video via the oEmbed API (no dates there)."""
+    oembed_url = "https://www.youtube.com/oembed?" + urllib.parse.urlencode(
+        {"url": YOUTUBE_WATCH_URL.format(vid=video_id), "format": "json"}
+    )
+    try:
+        text, _ = request_text(
+            "GET", oembed_url, timeout=timeout,
+            headers={"User-Agent": DEFAULT_USER_AGENT},
+            proxy_mode=proxy_mode, provider="youtube",
+        )
+        data = json.loads(text)
+        return data if isinstance(data, dict) else None
+    except (ToolRuntimeError, json.JSONDecodeError, ValueError):
+        return None
+
+
+def _ytdlp_flat_entries(channel_url: str, playlist_end: int = 30, timeout: int = 120) -> dict[str, dict[str, Any]] | None:
+    """One yt-dlp --flat-playlist -J pass over a channel/playlist.
+
+    Native JSON with titles + timestamps — never parse delimited text (titles
+    containing '|' have already cost 126 lost lines in a past session).
+    """
+    # Channel root ("@handle") = home tab: no dates, few entries. The /videos
+    # tab is what recent-video listings need.
+    if re.search(r"youtube\.com/@[^/]+/?$", channel_url):
+        channel_url = channel_url.rstrip("/") + "/videos"
+    # Proxy can be slow/flaky; retry yt-dlp without proxy if the proxied run fails.
+    for attempt_pm in ("auto", "direct"):
+        entries = _ytdlp_flat_entries_attempt(channel_url, playlist_end, timeout, attempt_pm)
+        if entries:
+            return entries
+    return None
+
+
+def _ytdlp_flat_entries_attempt(channel_url: str, playlist_end: int, timeout: int, attempt_pm: str) -> dict[str, dict[str, Any]] | None:
+    env = _build_proxy_env(attempt_pm)
+    # NixOS quirk: yt-dlp needs an explicit CA bundle.
+    env.setdefault("SSL_CERT_FILE", "/etc/ssl/certs/ca-certificates.crt")
+    try:
+        result = subprocess.run(
+            ["uv", "run", "--with", "yt-dlp", "--with", "certifi",
+             "yt-dlp", "--flat-playlist", "-J",
+             "--playlist-end", str(max(1, playlist_end)),
+             "--extractor-args", "youtubetab:approximate_date",
+             "--socket-timeout", "20",
+             channel_url],
+            capture_output=True, text=True, timeout=timeout, env=env,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return None
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    try:
+        data = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return None
+    entries: dict[str, dict[str, Any]] = {}
+    for entry in data.get("entries") or []:
+        vid = entry.get("id")
+        if not vid:
+            continue
+        ts = entry.get("timestamp") or entry.get("release_timestamp")
+        published = None
+        if ts:
+            try:
+                published = datetime.fromtimestamp(int(ts), tz=timezone.utc).date().isoformat()
+            except (ValueError, OverflowError, OSError):
+                published = None
+        entries[vid] = {"title": entry.get("title"), "published": published}
+    return entries or None
+
+
+def _enrich_channel_meta(payload: dict[str, Any], timeout: int, proxy_mode: str) -> None:
+    """Add titles + publish dates in batch (avoids ~20 individual resolves).
+
+    Strategy: one yt-dlp --flat-playlist -J pass (titles + dates), then one
+    oEmbed call per video whose title is still missing (oEmbed has no dates).
+    """
+    results = payload.get("results", [])
+    flat = _ytdlp_flat_entries(
+        payload.get("channel_url", ""), playlist_end=max(len(results), 1) + 10,
+        timeout=max(60, timeout),
+    )
+    if not results and flat:
+        # Channel HTML was consent-walled / empty: rebuild the listing from
+        # yt-dlp flat-playlist (the SKILL.md "listing fiable" recipe).
+        payload["results"] = [
+            {
+                "video_id": vid,
+                "title": entry.get("title"),
+                "published": entry.get("published"),
+                "meta_source": "yt-dlp",
+                "url": YOUTUBE_WATCH_URL.format(vid=vid),
+            }
+            for vid, entry in list(flat.items())
+        ]
+        results = payload["results"]
+    if not results:
+        return
+    touched_ytdlp = 0
+    if flat:
+        for item in results:
+            entry = flat.get(item.get("video_id"))
+            if not entry:
+                continue
+            changed = False
+            if not item.get("title") and entry.get("title"):
+                item["title"] = entry["title"]
+                changed = True
+            if not item.get("published") and entry.get("published"):
+                item["published"] = entry["published"]
+                changed = True
+            if changed:
+                item["meta_source"] = "yt-dlp"
+                touched_ytdlp += 1
+    touched_oembed = 0
+    for item in results:
+        if item.get("title"):
+            continue
+        meta = _oembed_meta(item.get("video_id", ""), timeout=timeout, proxy_mode=proxy_mode)
+        if meta and meta.get("title"):
+            item["title"] = meta["title"]
+            if meta.get("author_name"):
+                item["channel"] = meta["author_name"]
+            item["meta_source"] = "oembed"
+            touched_oembed += 1
+    payload["meta_enriched"] = {
+        "yt_dlp_entries": touched_ytdlp,
+        "oembed_titles": touched_oembed,
+        "still_missing_titles": sum(1 for i in results if not i.get("title")),
+    }
+
+
+def _write_output_file(path: str, content: str, fmt: str) -> str:
+    """Write output to a file, auto-correcting .json -> .md when the content is
+    markdown (prevents JSONDecodeError + manual renames when re-read later)."""
+    if fmt == "md" and path.lower().endswith(".json"):
+        corrected = path[:-5] + ".md"
+        print(f"[youtube-tool] format is markdown: extension auto-corrected {path} -> {corrected}", file=sys.stderr)
+        path = corrected
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(content)
+    return path
+
+
+def channel_videos(channel_url: str, limit: int = 20, timeout: int = 20, proxy_mode: str = "auto", meta: bool = False) -> dict[str, Any]:
+    # Normalize shorthand inputs ("@handle", "@handle/videos", bare handle) —
+    # requests raises MissingSchema on scheme-less URLs (was surfaced as a mute
+    # "Unexpected request failure").
+    if not channel_url.lower().startswith(("http://", "https://")):
+        channel_url = "https://www.youtube.com/" + channel_url.lstrip("/")
     def _fetch(html: str) -> list[dict[str, Any]]:
         return parse_channel_page(html)
 
@@ -252,7 +404,7 @@ def channel_videos(channel_url: str, limit: int = 20, timeout: int = 20, proxy_m
     except ToolRuntimeError as exc:
         return {
             "status": "error",
-            "error": {"kind": exc.kind, "message": exc.message},
+            "error": {"kind": exc.kind, "message": exc.message, "details": exc.details},
         }
 
     videos = _fetch(html)
@@ -266,11 +418,14 @@ def channel_videos(channel_url: str, limit: int = 20, timeout: int = 20, proxy_m
         )
         videos = _fetch(html_direct)
 
-    return {
+    payload = {
         "status": "ok",
         "channel_url": channel_url,
         "results": videos[:limit],
     }
+    if meta:
+        _enrich_channel_meta(payload, timeout=timeout, proxy_mode=proxy_mode)
+    return payload
 
 
 def _build_proxy_env(proxy_mode: str = "auto") -> dict[str, str]:
@@ -290,10 +445,22 @@ def _build_proxy_env(proxy_mode: str = "auto") -> dict[str, str]:
     return env
 
 
+def _stderr_hint(stderr: str) -> str:
+    """Extract an actionable hint from a failing provider's stderr."""
+    markers = ("IpBlocked", "RequestBlocked", "TooManyRequests", "429", "PO Token", "PO token",
+               "TranscriptsDisabled", "NoTranscriptFound", "VideoUnavailable")
+    for marker in markers:
+        if marker in stderr:
+            return marker
+    lines = [l for l in stderr.strip().splitlines() if l.strip()]
+    return lines[-1][:160] if lines else "unknown error"
+
+
 def _try_transcript_api(video_id: str, languages: list[str] | None = None, proxy_mode: str = "auto") -> dict[str, Any]:
     # youtube-transcript-api is not installed in system Python; use uv run subprocess only.
     # The new API requires instance: YouTubeTranscriptApi().fetch(), not static .fetch().
     # Proxy can cause IpBlocked from YouTube; retry without proxy on failure.
+    last_hint = "youtube-transcript-api failed"
     for attempt_pm in [proxy_mode, "direct"]:
         sub_env = _build_proxy_env(attempt_pm)
         try:
@@ -330,10 +497,12 @@ def _try_transcript_api(video_id: str, languages: list[str] | None = None, proxy
                         }
                 except json.JSONDecodeError:
                     pass
+            else:
+                last_hint = _stderr_hint(result.stderr or "")
         except (subprocess.TimeoutExpired, FileNotFoundError):
             pass
 
-    return {"source": TRANSCRIPT_SOURCE_NONE, "confidence": CONFIDENCE_LOW, "error": "youtube-transcript-api failed"}
+    return {"source": TRANSCRIPT_SOURCE_NONE, "confidence": CONFIDENCE_LOW, "error": f"youtube-transcript-api failed: {last_hint}"}
 
 
 def _try_ytdlp_transcript(video_id: str, proxy_mode: str = "auto") -> dict[str, Any]:
@@ -445,13 +614,28 @@ def transcript(
         fallback["status"] = "ok"
         return fallback
 
+    final_error = "All transcript sources failed"
+    primary_err = str(primary.get("error", ""))
+    blocked_markers = ("IpBlocked", "RequestBlocked", "TooManyRequests", "429", "PO Token", "PO token")
+    if any(m in primary_err for m in blocked_markers):
+        final_error = (
+            f"All transcript sources failed ({primary_err}). YouTube is blocking this exit IP. "
+            "Fallback: use the UI+CDP recipe in the youtube-research SKILL.md — open the video in a "
+            "CDP-driven browser, click \"…Afficher la transcription\", intercept the get_panel OR "
+            "get_transcript response, parse transcriptSegmentViewModel. If still blocked, switch exit "
+            "IP (see steel-browser skill). FAILED_PRECONDITION on a video = move to the next one."
+        )
     return {
         "status": "error",
         "video_id": video_id,
         "url": YOUTUBE_WATCH_URL.format(vid=video_id),
         "source": TRANSCRIPT_SOURCE_NONE,
         "confidence": CONFIDENCE_LOW,
-        "error": "All transcript sources failed",
+        "error": final_error,
+        "provider_errors": {
+            "youtube-transcript-api": primary.get("error"),
+            "yt-dlp": fallback.get("error"),
+        },
         "attempts": attempts,
     }
 
@@ -522,6 +706,7 @@ def render_transcript_md(payload: dict[str, Any]) -> str:
     vid = payload.get("video_id", "unknown")
     lines = [
         f"# Transcript: {vid}",
+        "- **Format**: markdown",
         f"- **Source**: {payload.get('source', 'unknown')}",
         f"- **Confidence**: {payload.get('confidence', 'unknown')}",
         f"- **Language**: {payload.get('language', 'unknown')}",
@@ -560,12 +745,21 @@ def render_channel_md(payload: dict[str, Any]) -> str:
     lines = [f"# Channel Videos", ""]
     lines.append(f"- **Channel URL**: {payload.get('channel_url', '')}")
     lines.append(f"- **Video count**: {len(payload.get('results', []))}")
+    if payload.get("meta_enriched"):
+        me = payload["meta_enriched"]
+        lines.append(
+            f"- **Meta enrichment**: yt-dlp entries: {me.get('yt_dlp_entries', 0)}, "
+            f"oEmbed titles: {me.get('oembed_titles', 0)}, "
+            f"titles still missing: {me.get('still_missing_titles', 0)}"
+        )
     lines.append("")
     lines.append("## Videos")
     lines.append("")
     for idx, item in enumerate(payload.get("results", []), 1):
         lines.append(f"### {idx}. {item.get('title') or item.get('video_id', 'Unknown')}")
         lines.append(f"- URL: {item.get('url', '')}")
+        if item.get("meta_source"):
+            lines.append(f"- Meta source: {item['meta_source']}")
         if item.get("published"):
             lines.append(f"- Published: {item['published']}")
         if item.get("views"):
@@ -601,13 +795,17 @@ def main() -> int:
     transcript_p.add_argument("video_id_or_url", help="YouTube video ID or URL")
     transcript_p.add_argument("--languages", nargs="+", default=["en"], help="Preferred languages (default: en)")
     transcript_p.add_argument("--no-fallback", action="store_true", help="Skip yt-dlp fallback")
+    transcript_p.add_argument("--out", default=None,
+                              help="Write output to file; auto-corrects .json -> .md when format is markdown")
     transcript_p.add_argument("--timeout", type=int, default=20)
     transcript_p.add_argument("--format", choices=["md", "json"], default="md")
     transcript_p.add_argument("--proxy-mode", choices=["auto", "direct", "required", "disabled"], default="auto")
 
-    channel_p = sub.add_parser("channel", help="List videos from a channel")
+    channel_p = sub.add_parser("channel", aliases=["list"], help="List videos from a channel")
     channel_p.add_argument("channel_url", help="YouTube channel URL (e.g. https://www.youtube.com/@MKBHD/videos)")
     channel_p.add_argument("--limit", type=int, default=20, help="Max results (default: 20)")
+    channel_p.add_argument("--meta", action="store_true",
+                           help="Add titles + publish dates in batch (yt-dlp flat-playlist, oEmbed fallback)")
     channel_p.add_argument("--timeout", type=int, default=20)
     channel_p.add_argument("--format", choices=["md", "json"], default="md")
     channel_p.add_argument("--proxy-mode", choices=["auto", "direct", "required", "disabled"], default="auto")
@@ -640,12 +838,18 @@ def main() -> int:
                 proxy_mode=args.proxy_mode,
             )
             output = render_transcript_md(payload) if args.format == "md" else json.dumps(payload, indent=2, ensure_ascii=False)
-        elif args.action == "channel":
+            if args.out:
+                written = _write_output_file(args.out, output, args.format)
+                print(json.dumps({"status": "ok", "written_to": written, "format": args.format,
+                                  "bytes": len(output.encode("utf-8"))}))
+                return 0
+        elif args.action in ("channel", "list"):
             payload = channel_videos(
                 channel_url=args.channel_url,
                 limit=max(1, args.limit),
                 timeout=max(1, args.timeout),
                 proxy_mode=args.proxy_mode,
+                meta=args.meta,
             )
             output = render_channel_md(payload) if args.format == "md" else json.dumps(payload, indent=2, ensure_ascii=False)
         else:

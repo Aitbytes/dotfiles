@@ -40,8 +40,8 @@ Understand the product category landscape before looking at specific items.
 
 - Web search: "best [product] 2025 buying guide"
 - Reddit is STANDBY (see reddit-research skill) — use TheRedArchive via steel for archived subs, YouTube otherwise
-- YouTube search: `uv run --with requests --with certifi python3 ~/.opencode/tools/youtube.py search --query "..."`
-- YouTube transcript: `uv run --with requests --with certifi --with youtube-transcript-api python3 ~/.opencode/tools/youtube.py transcript "..."`
+- YouTube search: `uv run --with requests --with certifi python3 ~/dotfiles/ai/tools/youtube.py search --query "..."`
+- YouTube transcript: `uv run --with requests --with certifi --with youtube-transcript-api python3 ~/dotfiles/ai/tools/youtube.py transcript "..."`
 
 **Key questions:**
 
@@ -72,14 +72,14 @@ Flag: community signal is anecdotal — verify factual claims elsewhere.
 Search for review videos:
 ```bash
 uv run --with requests --with certifi \
-  python3 ~/.opencode/tools/youtube.py search --query "PRODUCT review" --limit 10
+  python3 ~/dotfiles/ai/tools/youtube.py search --query "PRODUCT review" --limit 10
 ```
 
 
 Extract transcripts for detailed analysis:
 ```bash
 uv run --with requests --with certifi --with youtube-transcript-api \
-  python3 ~/.opencode/tools/youtube.py transcript "VIDEO_ID" [--languages en]
+  python3 ~/dotfiles/ai/tools/youtube.py transcript "VIDEO_ID" [--languages en]
 ```
 
 Look for: comparison videos, long-term reviews, problem-focused content.
@@ -164,7 +164,7 @@ Search fallback chain when DDG fails (anomaly page, traceback, empty): startpage
 ### Web search pattern (no `search` subcommand exists)
 
 ```bash
-uv run --with requests --with certifi --with beautifulsoup4 python3 ~/.opencode/tools/web_scraper.py \
+uv run --with requests --with certifi --with beautifulsoup4 python3 ~/dotfiles/ai/tools/web_scraper.py \
   --url "https://duckduckgo.com/html/?q=<urlencoded-query>" --mode text --timeout 30
 ```
 (Do not invent a `search` subcommand - it fails; session 01a13742 wasted 2 calls on it.)
