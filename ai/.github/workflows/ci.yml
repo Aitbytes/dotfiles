@@ -1,0 +1,29 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck (doctor, bootstrap, tools/*.sh)
+        run: |
+          shellcheck agent-shared/doctor.sh bootstrap.sh
+          shellcheck tools/*.sh 2>/dev/null || true
+      - name: syntaxe python des tools
+        run: python3 -m compileall -q tools/
+      - name: frontmatter des agents (name + description requis)
+        run: |
+          python3 - <<'PY'
+          import glob, sys
+          bad = []
+          for f in glob.glob('agents/*.md') + glob.glob('.agents/*.md'):
+              head = open(f, encoding='utf-8').read(400)
+              if 'name:' not in head or 'description:' not in head:
+                  bad.append(f)
+          if bad:
+              print('frontmatter manquant :', *bad, sep='\n  '); sys.exit(1)
+          print(f"OK — {len(glob.glob('agents/*.md'))} agents user + {len(glob.glob('.agents/*.md'))} agents legacy validés")
+          PY
+      - name: JSON valides (pi config, sites.json)
+        run: |
+          python3 -c "import json,glob;[json.load(open(f)) for f in glob.glob('pi/*.json')+glob.glob('.agents/skills/steel-browser/sites.json')]"

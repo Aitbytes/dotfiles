@@ -60,9 +60,13 @@ pipx : `pypaperless-cli` (pngx), `yt-dlp` **v2026.3.17 obsolète en double**
 8. **Binaires non sourcés** : `gws`, `linkedin-dm`, `autocomplete.sh` sans mention de version/origine → irreproductibles.
 9. **Rien ne verrouille `settings.json`/`models.json` de pi** dans le repo.
 
-## 3. Plan de rationalisation (5 phases)
+## 3. Plan de rationalisation (5 phases) — ✅ EXÉCUTÉES le 2026-10-27
 
-### Phase 0 — Filet de sécurité (30 min)
+> Résultat : branch `ai-rationalisation` (8 commits), doctor 28 ok / 0 fail,
+> export https://github.com/Aitbytes/agent-stack (privé, main = split subtree, CI branchée).
+> Reste au user : merger la branche dans main dotfiles ; CI verte à vérifier au 1ᵉʳ push.
+
+### Phase 0 — Filet de sécurité ✅
 ```bash
 cd ~/dotfiles && git checkout -b ai-rationalisation
 git add -A ai/ && git commit -m "wip: snapshot couche AI avant rationalisation"
