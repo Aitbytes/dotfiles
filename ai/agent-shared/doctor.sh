@@ -108,9 +108,10 @@ pipx list 2>/dev/null | grep -q 'package yt-dlp' && line FAIL "doublon: yt-dlp e
 ls "$HOME/.npm-global/lib/node_modules/@linkedapi" >/dev/null 2>&1 && line FAIL "doublon: @linkedapi/linkedin-cli npm encore présent (garder uv linkedin-cli)" || line ok "pas de doublon linkedin"
 
 # 9d. agents user-scope versionnés
-for a in web-researcher grumpy-reviewer svg-visualizer; do
+for a in web-researcher grumpy-reviewer svg-visualizer vague3.recherche demolition.demolishcfo usines.factoryadmin; do
   [ -r "$HOME/dotfiles/ai/agents/$a.md" ] && line ok "agent versionné: $a" || line FAIL "agent versionné: $a manquant dans dotfiles/ai/agents/"
 done
+ls "$HOME"/dotfiles/ai/.agents/*.md >/dev/null 2>&1 && line FAIL "des .md d'agents traînent encore à la racine .agents/ (à déplacer vers ai/agents/)" || line ok ".agents/ racine propre (skills uniquement)"
 
 echo "────────────────────────────"
 echo "summary: $PASS ok, $WARN warn, $FAIL fail"
