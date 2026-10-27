@@ -1,0 +1,14 @@
+# S'applique aussi au repo split (agent-stack) — le .gitignore racine n'est pas
+# emporté par git subtree split.
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/*.bak
+**/*.swp
+*.tgz
+agents-legacy/
+state/
+models-store*
+run-history*
+sessions/
+.reddit_data/
