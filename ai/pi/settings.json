@@ -1,0 +1,16 @@
+{
+  "skills": [
+    "~/skills/text-to-cad/skills"
+  ],
+  "lastChangelogVersion": "1.3.0",
+  "defaultProvider": "zai",
+  "defaultModel": "glm-5.3-flash",
+  "hideThinkingBlock": false,
+  "defaultThinkingLevel": "high",
+  "packages": [
+    "npm:pi-subagents",
+    "npm:@jmfederico/pi-web",
+    "../../.npm-global/lib/node_modules/@jmfederico/pi-web/dist/pi-packages/relays"
+  ],
+  "theme": "dark"
+}
