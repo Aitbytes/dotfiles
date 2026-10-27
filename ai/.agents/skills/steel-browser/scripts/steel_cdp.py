@@ -3,7 +3,7 @@
 
 Subcommands:
   health                          — check Steel API + CDP endpoint
-  fetch <url> [--site X] [--out F] [--retry-wall] [--timeout N] [--settle F]
+  fetch <url> [--site X] [--out F] [--retry-wall] [--timeout N] [--settle F] [--max-text N]
   transcript <tiktok-video-url> [--out F]
   shot <url> <out.jpg>            — screenshot to jpeg file
 Extractors: auto|none|facebook|instagram|tiktok|ikea|amazon|aliexpress|action|but|conforama|manomano|vidaxl|miliboo|kavehome|theredarchive (auto matches by URL)
@@ -21,6 +21,7 @@ import websocket
 API = "http://192.168.1.50:3000/v1"
 CDP_HTTP = "http://192.168.1.50:9223"
 DEFAULT_TIMEOUT = 45
+DEFAULT_MAX_TEXT = 2500
 
 # ---------- CDP client ----------
 
@@ -94,14 +95,18 @@ def detect_walls(title, text, html):
     return hits
 
 
-EXTRACT_COMMON = """
+EXTRACT_COMMON_TEMPLATE = """
 (() => ({
   url: location.href,
   title: document.title,
-  text: document.body ? document.body.innerText.replace(/\\s+/g, ' ').slice(0, 2500) : '',
+  text: document.body ? document.body.innerText.replace(/\\s+/g, ' ').slice(0, __MAX_TEXT__) : '',
   html: document.documentElement.outerHTML.slice(0, 60000)
 }))()
 """
+
+
+def extract_common_js(max_text=DEFAULT_MAX_TEXT):
+    return EXTRACT_COMMON_TEMPLATE.replace("__MAX_TEXT__", str(int(max_text)))
 
 
 def navigate(cdp, url, nav_timeout=DEFAULT_TIMEOUT, settle=3.0):
@@ -124,8 +129,8 @@ def navigate(cdp, url, nav_timeout=DEFAULT_TIMEOUT, settle=3.0):
     return s, tid
 
 
-def page_state(cdp, s):
-    r = cdp.call("Runtime.evaluate", {"expression": EXTRACT_COMMON, "returnByValue": True},
+def page_state(cdp, s, max_text=DEFAULT_MAX_TEXT):
+    r = cdp.call("Runtime.evaluate", {"expression": extract_common_js(max_text), "returnByValue": True},
                  sessionId=s, timeout=25)["result"].get("value") or {}
     return r
 
@@ -197,20 +202,70 @@ def extract_ikea(js_eval):
 
 
 def extract_amazon(js_eval):
+    # 2026-10-25: audit found the classic `[data-component-type="s-search-result"]`
+    # + `h2 a` selectors no longer matching the live DOM (Amazon revamp).
+    # Rewritten with newest->classic card-selector fallback (first selector with
+    # hits wins) and title/price fallbacks that survive layout changes.
+    # UNTESTED on live Amazon (anti-bot: do not mass-fetch); fixture-tested via
+    # local HTML pages (see SKILL.md Verification).
     return js_eval(r"""
 (() => {
-  const results = [...document.querySelectorAll('[data-component-type="s-search-result"]')];
+  const CARD_SELS = [
+    '[data-component-type="s-search-result"]',   // classic layout
+    'div[data-cy="asin-card"]',                   // newer grid card
+    'div[data-asin].s-result-item',                // legacy result item
+    'div[data-asin]'                               // last resort: any ASIN card
+  ];
+  let results = [], matchedSel = null;
+  for (const sel of CARD_SELS) {
+    const r = [...document.querySelectorAll(sel)].filter(e => e.getAttribute('data-asin'));
+    if (r.length) { results = r; matchedSel = sel; break; }
+  }
+  const LINK_SELS = ['h2 a', 'h2 a.a-link-normal', 'a.a-link-normal.s-line-clamp-1',
+                     'a.a-link-normal[class*="s-line-clamp"]', 'a.a-link-normal.s-no-outline',
+                     '[data-cy="title-recipe"] a', 'a[href*="/dp/"]'];
+  // 2026-10-25 live: `h2 a` is GONE on amazon.fr and the first /dp/ anchor inside a
+  // card is the aria-hidden IMAGE link (class s-no-outline, empty text AND aria-label)
+  // — returning it first made name='' and the filter dropped every item (count=0 on a
+  // healthy 48-card grid). Prefer anchors that actually carry a name; image anchor is
+  // only the last-resort fallback.
+  const findLink = (r) => {
+    let fallback = null;
+    for (const s of LINK_SELS) {
+      for (const a of r.querySelectorAll(s)) {
+        if (!a.getAttribute('href')) continue;
+        if ((a.getAttribute('aria-label') || a.textContent || '').trim()) return a;
+        if (!fallback) fallback = a;
+      }
+    }
+    return fallback;
+  };
   const items = results.slice(0, 40).map(r => {
-    const a = r.querySelector('h2 a, h2 span a, [data-cy="title-recipe"] a');
+    const a = findLink(r);
+    let path = '';
+    if (a) {
+      try {
+        const href = a.getAttribute('href');
+        path = new URL(href, location.href).pathname;
+        // normalize: /dp/ASIN direct, /sspa/ redirects (ASIN in ?url= param), locale-prefixed paths
+        const m = path.match(/^\/(?:.*\/)?dp\/([A-Z0-9]{10})(?=$|[\/?&#])/)
+               || href.match(/\/dp\/([A-Z0-9]{10})(?=$|[\/?&#])/)
+               || href.match(/dp(?:%2F|=)([A-Z0-9]{10})(?=$|[\/?&#%])/);
+        if (m) path = '/dp/' + m[1];
+      } catch (e) {}
+    }
     const whole = r.querySelector('.a-price-whole')?.textContent?.replace(/[,\.\s]+$/, '').trim() || '';
     const frac = r.querySelector('.a-price-fraction')?.textContent?.trim() || '';
     const sym = r.querySelector('.a-price-symbol')?.textContent?.trim() || '€';
-    const rating = r.querySelector('.a-icon-alt')?.textContent?.split(' ')[0] || '';
-    return {asin: r.getAttribute('data-asin'), name: (a?.textContent || '').trim().slice(0, 120),
-            price: whole ? (frac ? whole + ',' + frac : whole) + sym : '', path: a ? new URL(a.href).pathname : '',
-            rating};
+    const flat = (r.innerText || '').replace(/\s+/g, ' ');
+    const price = whole ? (frac ? whole + ',' + frac : whole) + sym
+                        : ((flat.match(/((?:\d{1,3}(?:[ .]\d{3})*|\d+)(?:[.,]\d{2})?)\s*€/) || ['', ''])[1] + ' €').trim();
+    const rating = r.querySelector('.a-icon-alt')?.textContent?.split(' ')[0]
+                || (flat.match(/([\d,.]+)\s*(?:sur|out of)\s*5/) || ['', ''])[1];
+    const name = (a?.getAttribute('aria-label') || a?.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+    return {asin: r.getAttribute('data-asin'), name, price, path, rating};
   }).filter(x => x.name && x.path);
-  return {kind: 'amazon_search', count: items.length, items: items.slice(0, 20)};
+  return {kind: 'amazon_search', count: items.length, items: items.slice(0, 20), cardSelector: matchedSel};
 })()
 """)
 
@@ -552,7 +607,8 @@ def cmd_health():
     return 0 if isinstance(out.get("api"), dict) and out.get("cdp") == "ok" else 1
 
 
-def cmd_fetch(url, site="auto", out_file=None, retry_wall=False, nav_timeout=DEFAULT_TIMEOUT, settle=3.0):
+def cmd_fetch(url, site="auto", out_file=None, retry_wall=False, nav_timeout=DEFAULT_TIMEOUT, settle=3.0,
+              max_text=DEFAULT_MAX_TEXT):
     if site == "auto":
         site = site_for(url)
     # sites needing longer settle for lazy hydration
@@ -564,27 +620,28 @@ def cmd_fetch(url, site="auto", out_file=None, retry_wall=False, nav_timeout=DEF
     result = {"url": url, "site": site}
     try:
         s, tid = navigate(cdp, url, nav_timeout=nav_timeout, settle=settle)
-        state = page_state(cdp, s)
+        state = page_state(cdp, s, max_text=max_text)
         walls = detect_walls(state.get("title"), state.get("text"), state.get("html"))
         # Cloudflare-style interstitial: the non-interactive challenge often
         # self-resolves in 5-15s (no reload needed) — poll patiently first
         if retry_wall and any(w in ("cloudflare_challenge", "datadome") for w in walls):
             for _ in range(5):
                 time.sleep(3)
-                state = page_state(cdp, s)
-                walls = detect_walls(state.get("title"), state.get("text"), state.get("html"))
+                state = page_state(cdp, s, max_text=max_text)
                 if not any(w in ("cloudflare_challenge", "datadome") for w in walls):
                     break
             if any(w in ("cloudflare_challenge", "datadome") for w in walls):
                 cdp.call("Page.reload", {}, sessionId=s, timeout=30)
                 time.sleep(6)
-                state = page_state(cdp, s)
+                state = page_state(cdp, s, max_text=max_text)
                 walls = detect_walls(state.get("title"), state.get("text"), state.get("html"))
             result["retried"] = True
         result["final_url"] = state.get("url")
         result["title"] = state.get("title")
         result["walls"] = walls
-        result["text"] = (state.get("text") or "")[:6500]
+        result["max_text"] = max_text
+        # never cap below the old 6500 default, so --max-text N actually delivers N chars
+        result["text"] = (state.get("text") or "")[:max(6500, max_text)]
         blocked = any(w in ("cloudflare_challenge", "datadome", "blocked") for w in walls)
         result["verdict"] = "blocked" if blocked else "ok"
         if not blocked and site in EXTRACTORS:
@@ -718,18 +775,24 @@ def cmd_transcript(url, out_file=None):
 
 
 def main():
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 2 or sys.argv[1] in ("--help", "-h", "help"):
         print(__doc__)
-        return 2
+        return 0 if len(sys.argv) > 1 else 2
     cmd = sys.argv[1]
     if cmd == "health":
         return cmd_health()
     if cmd == "fetch":
+        if len(sys.argv) < 3:
+            print(json.dumps({"error": "fetch requires a <url>"}))
+            return 2
         url = sys.argv[2]
-        site, out_file, retry_wall, nav_timeout, settle = "auto", None, False, DEFAULT_TIMEOUT, 3.0
+        site, out_file, retry_wall, nav_timeout, settle, max_text = "auto", None, False, DEFAULT_TIMEOUT, 3.0, DEFAULT_MAX_TEXT
         args = sys.argv[3:]
         i = 0
         while i < len(args):
+            if args[i] in ("--site", "--out", "--timeout", "--settle", "--max-text") and i + 1 >= len(args):
+                print(json.dumps({"error": f"missing value for {args[i]}"}))
+                return 2
             if args[i] == "--site":
                 site = args[i + 1]; i += 2
             elif args[i] == "--out":
@@ -740,10 +803,12 @@ def main():
                 nav_timeout = int(args[i + 1]); i += 2
             elif args[i] == "--settle":
                 settle = float(args[i + 1]); i += 2
+            elif args[i] == "--max-text":
+                max_text = int(args[i + 1]); i += 2
             else:
                 i += 1
         return cmd_fetch(url, site=site, out_file=out_file, retry_wall=retry_wall,
-                         nav_timeout=nav_timeout, settle=settle)
+                         nav_timeout=nav_timeout, settle=settle, max_text=max_text)
     if cmd == "transcript":
         url = sys.argv[2]
         out_file = sys.argv[4] if len(sys.argv) > 4 and sys.argv[3] == "--out" else None

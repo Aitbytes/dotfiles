@@ -46,8 +46,9 @@ All through the `terminal` tool, from any cwd (scripts resolve their own path):
     $python ~/.agents/skills/steel-browser/scripts/steel_cdp.py fetch https://www.quora.com --retry-wall
     $python ~/.agents/skills/steel-browser/scripts/steel_cdp.py transcript https://www.tiktok.com/@user/video/123
     $python ~/.agents/skills/steel-browser/scripts/steel_cdp.py shot https://example.com /tmp/x.jpg
+    $python ~/.agents/skills/steel-browser/scripts/steel_cdp.py fetch https://example.com --max-text 50
 
-`--site` selects an extractor: `auto` (match by URL), `facebook`, `instagram`, `tiktok`, `ikea`, `amazon`, `aliexpress`, `action`, `but`, `conforama`, `manomano`, `vidaxl`, `miliboo`, `kavehome`, `theredarchive`, or `none`. Output is JSON on stdout (or `--out` file). `--settle F` overrides the post-load wait (seconds).
+`--site` selects an extractor: `auto` (match by URL), `facebook`, `instagram`, `tiktok`, `ikea`, `amazon`, `aliexpress`, `action`, `but`, `conforama`, `manomano`, `vidaxl`, `miliboo`, `kavehome`, `theredarchive`, or `none`. Output is JSON on stdout (or `--out` file). `--settle F` overrides the post-load wait (seconds). `--max-text N` caps the extracted page `text` field (chars, default 2500; raise it — e.g. `--max-text 25000` — when the page's relevant content exceeds the default: specs tables, forum threads, doc pages).
 
 ## Quick Reference
 - Steel REST API: `http://192.168.1.50:3000/v1` (health, POST /sessions)
@@ -70,7 +71,7 @@ All through the `terminal` tool, from any cwd (scripts resolve their own path):
 - No walls, no login, no JS needed (plain HTTP works too) — the whole archive is server-rendered.
 
 ### E-commerce / retail extractors
-- **Amazon FR** (`amazon.fr/s?k=<query>`): results via `[data-component-type="s-search-result"]` — name, clean price (`89,99€`), ASIN, rating. EN titles common (browser locale → `/-/en/` paths) — fine for extraction. No wall.
+- **Amazon FR** (`amazon.fr/s?k=<query>`): results via a card-selector fallback chain — `[data-component-type="s-search-result"]` (classic) → `div[data-cy="asin-card"]` (newer grid) → `div[data-asin]` (last resort); first selector with hits wins and is reported in `data.cardSelector` (2026-10-25 rewrite, live re-probe done same day: classic card selector STILL wins on live FR — 40 items on `k=support+tv+600x400`, all /dp/-normalized + priced + rated). Title link via fallback chain (`h2 a` → `a.a-link-normal.s-line-clamp-*` → `a[href*="/dp/"]`) — **live 2026-10-25: `h2 a` is GONE** and the first `/dp/` anchor inside a card is the aria-hidden IMAGE link (empty text+aria-label), so the extractor prefers name-carrying anchors and keeps the image anchor only as last resort (fixing it took 1 live fetch; a healthy 48-card grid extracted 0 items before the fix). `/sspa/` redirect + locale-prefixed hrefs normalized to `/dp/<ASIN>`; price from `.a-price` spans with text-€ fallback. EN titles common (browser locale → `/-/en/` paths) — fine for extraction. No wall.
 - **AliExpress** (`fr.aliexpress.com/w/wholesale-<query>.html`): cards `.search-item-card-wrapper-gallery` — class-agnostic price/promo/sold/rating parse from card text lines (hashed classnames change; text-line regex is stable). 24–60 items. No wall.
 - **Action** (`action.com/<locale>/search/?q=<query>` — param is **q**, NOT query): product links `/p/<itemnr>/<slug>/` — name, `X,XX €/pce` price. Cloudflare challenge on first load → **use `--retry-wall`**. Beware: wrong param (`query=`) silently falls back to homepage carousels.
 - **BUT** (`but.fr/Common/Search/SearchProductsList?KeyWords=<query>` — found via their `/Api/Rest/SearchEngine/Suggestions` API): cards `/produits/<ean>/<slug>.html` — name, price+promo (`149,99€179,99€-16%`). SPA slow: auto-settle 12s + JS polls for link/price hydration (`--timeout 80`). Note: generic queries redirect to category pages (`/index-cXXXXX.html`) — extractor works on both. Intermittent DataDome tag present; only a real captcha-delivery interstitial means blocked.
@@ -121,8 +122,14 @@ Google Workspace account `mohamed.ait.taleb@devoteam.com` — full login flow dr
   - "Already signed in?" check first: `page_info().url` starts with `https://mail.google.com/mail/u/0/` → skip the whole flow
   - After a valid password, corporate policy still forces 2FA — that is the expected happy path, not an error
 
+## Anti-bot ladder (codified 2026-10-25)
+- **Datacenter/home IP → skip static search engines entirely, go straight to Steel** (or site-native search). Google = 429+captcha persistent; DuckDuckGo rate-limits then captchas after ~8 requests/browser; Bing static degrades + geo-localizes (Philippines in 2026-10-25 session; single curl re-probe same day returned 200 + correct FR results — geo is intermittent, language-check results every time); mojeek = reCAPTCHA (see sites.json). The 2026-10-25 session burned ~9 web_scraper calls on these before switching ("Static attempts burning") — that is the failure mode this ladder prevents.
+- **Static (`web_scraper`/curl) is reserved for pages known simple** per sites.json: server-rendered, no wall row (e.g. theredarchive, docs). When in doubt, probe with ONE static call, not nine.
+- **429 / rate-limit plan B = different egress IP.** Steel's Chrome egresses from the LAN host (192.168.1.50), so a Steel fetch is already a different IP than the session host. browser-use driven via `BU_CDP_URL=http://192.168.1.50:9223` shares Steel's egress — it is NOT a second IP. Real rotation = proxy-based fetchers (lbc_fetch.py's iproyal FR-geo pattern) or waiting out the rate-limit window.
+- Space repeated queries to the same engine (~8/browser is the observed DDG limit); spread across engines instead of bursting one.
+
 ## Pitfalls
-- **Google search → HTTP 429 + captcha**, persistent (datacenter IP). Use DuckDuckGo or Bing instead — both extract fine.
+- **Google search → HTTP 429 + captcha**, persistent (datacenter IP). DDG/Bing are rate-limited/degraded too on datacenter IPs — follow the Anti-bot ladder instead of burning static attempts.
 - **DataDome walls never clear** by retry (unlike Cloudflare's JS challenge which often clears on 2nd load).
 - **DataDome false positives**: some sites (BUT) embed the DataDome SDK tag without triggering it — wall detection keys on `captcha-delivery.com` (real interstitial), never on a bare "datadome" substring.
 - **Lazy price hydration** (BUT skeletons, Conforama per-tile intersection observer): extractors must scroll and poll — a single post-load snapshot gets empty prices.
@@ -138,6 +145,8 @@ Google Workspace account `mohamed.ait.taleb@devoteam.com` — full login flow dr
 ## Verification
 - `health` prints browser version + session API status
 - `fetch https://example.com --site none` returns verdict `ok`, title "Example Domain"
+- `fetch https://example.com --site none --max-text 50` → `text` truncated to ≤50 chars, `max_text: 50` echoed in output (verified 2026-10-25)
+- `fetch <data:text/html;base64,… fixture> --site amazon` — Amazon extractor fixture tests (revamp + classic layouts) both return parsed items incl. `/sspa/`-redirect → `/dp/<ASIN>` normalization and text-price fallback (2026-10-25); live Amazon re-probe verified same day (single fetch, never mass-scrape): 40 items, `cardSelector` = first-in-chain
 - `fetch https://www.ikea.com/fr/fr/search/?q=bureau --site ikea` returns ≥8 items with prices
 - `fetch https://www.amazon.fr/s?k=bureau --site auto` returns `amazon_search` ≥20 items with prices
 - `fetch https://fr.aliexpress.com/w/wholesale-bureau.html --site auto` returns `aliexpress_search` ≥24 items with prices

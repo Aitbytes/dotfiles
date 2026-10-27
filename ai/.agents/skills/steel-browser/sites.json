@@ -12,9 +12,9 @@
       "extractor": "amazon_search",
       "status": "ok",
       "wall_type": null,
-      "last_verified": "2026-08-21",
+      "last_verified": "2026-10-25",
       "fallback": "playwright-cli",
-      "notes": "~20 items, EN titles common (fine)"
+      "notes": "live re-probe 2026-10-25: 40 items, cardSelector=[data-component-type=\"s-search-result\"] (1st in chain still wins), all /dp/-normalized + priced + rated; h2 titles GONE on live FR (image-anchor pitfall fixed 2026-10-25); EN titles common (fine)"
     },
     {
       "site": "fr.aliexpress.com",
@@ -466,6 +466,61 @@
       "last_verified": "2026-10-15",
       "fallback": "amazon.fr / darty fallback topachat",
       "notes": "steel datadome-blocked (session 01a13f93); curl_cffi+FR-proxy: home 400/312, search = soft-404 SPA shell 166KB no server-side product data. Do NOT retry via any path."
+    },
+    {
+      "site": "duckduckgo",
+      "url_pattern": "duckduckgo.com/html/?q=<q> | lite.duckduckgo.com/lite/?q=<q>",
+      "tool": "static http",
+      "extractor": "ddg_result_links",
+      "status": "partial",
+      "wall_type": "rate_limit_captcha",
+      "last_verified": "2026-10-25",
+      "fallback": "site-native search / steel",
+      "notes": "html + lite work initially; after ~8 requests per browser session: rate-limit then captcha (2026-10-25 session: 'DDG Lite now shows the captcha too'). Space queries or rotate browser/session; do not plan >8 q/wave on one engine"
+    },
+    {
+      "site": "bing.com",
+      "url_pattern": "bing.com/search?q=<q>",
+      "tool": "static http",
+      "extractor": "bing_result_links",
+      "status": "partial",
+      "wall_type": "geo_degraded_datacenter_ip",
+      "last_verified": "2026-10-25",
+      "fallback": "ddg (early hits) / site-native search",
+      "notes": "static results degraded + geo-localized to datacenter IP region (Philippines in 2026-10-25 session); single curl re-probe same day: HTTP 200 + correct FR results, no captcha — geo is INTERMITTENT, language-check results every time; bing via steel returned empty. Skip for FR shopping queries"
+    },
+    {
+      "site": "mojeek.com",
+      "url_pattern": "mojeek.com/search?q=<q>",
+      "tool": null,
+      "extractor": null,
+      "status": "blocked",
+      "wall_type": "recaptcha",
+      "last_verified": "2026-10-25",
+      "fallback": "ddg html/lite (rate-limited) / site-native search",
+      "notes": "reCAPTCHA on search (2026-10-25 session)"
+    },
+    {
+      "site": "currys.co.uk",
+      "url_pattern": "currys.co.uk",
+      "tool": null,
+      "extractor": null,
+      "status": "blocked",
+      "wall_type": "cloudflare",
+      "last_verified": "2026-10-25",
+      "fallback": "amazon.fr / uk retail alternatives",
+      "notes": "Cloudflare challenge (2026-10-25 session)"
+    },
+    {
+      "site": "gofile.io",
+      "url_pattern": "gofile.io/d/<id>",
+      "tool": "static http (API probe)",
+      "extractor": null,
+      "status": "ok",
+      "wall_type": null,
+      "last_verified": "2026-10-25",
+      "fallback": null,
+      "notes": "file host; dead links detectable BEFORE a full fetch: page/API says 'removed after a period of inactivity' (2026-10-25 session, /d/0cGAia3J). Cheap-probe first — never burn browser fetches guessing whether a gofile link is alive"
     }
   ]
 }

@@ -46,6 +46,22 @@ chrome://inspect/#remote-debugging
 
 Ask the user to tick "Allow remote debugging for this browser instance" and click Allow if Chrome shows a permission popup. Then retry the same `browser-use` command.
 
+### Chrome ≥136: default profile blocks CDP — launch a side instance
+
+Since Chrome 136, remote debugging is **blocked on the default user-data-dir** (security policy; the
+"Allow remote debugging" option is never offered there). If attaching to the running Chrome dead-ends,
+do NOT burn calls on the default profile — launch a side instance:
+
+```bash
+setsid google-chrome --user-data-dir=/tmp/chrome-cdp --remote-debugging-port=9222 </dev/null >/dev/null 2>&1 &
+```
+
+- `--user-data-dir` must be NON-default (any fresh directory); the block applies to `Default` only.
+- Launch with `setsid`, not `nohup`: a `nohup`'d child dies when the originating shell exits; `setsid` detaches it.
+- Connect with `BU_CDP_URL=http://127.0.0.1:9222 browser-use ...`.
+
+(2026-10-25: ~10 dead-end calls — ps/ss/GitHub fetches — before finding this.)
+
 ## Remote Browsers
 
 Use Browser Use cloud for headless servers, parallel sub-agents, or isolated work.
@@ -164,6 +180,8 @@ If you get stuck on a browser mechanic, check https://github.com/browser-use/bro
 - Omnibox popups are not real work tabs.
 - CDP target order is not Chrome's visible tab-strip order.
 - `BU_CDP_URL` is an HTTP DevTools endpoint; the daemon resolves it to WebSocket.
+- `pkill -f <pattern>` can kill the caller: the pattern matches the current shell command itself (the command line contains the pattern text). Prefer a pidfile, or a non-self-matching pattern (e.g. `pkill -f "user-data-dir=/tmp/chrome[-]cdp"`). ⚠️ The bracket trick only excludes YOUR shell: any other process whose argv embeds the same string still matches (2026-10-25: a parent agent process carrying the task text matched, and its PID — not chromium's — landed in the pidfile). Always verify before killing: `ps -p $(cat /tmp/chrome-cdp.pid) -o pid=,comm=` must show `chromium`/`chrome`; safer: pick the PID whose `/proc/<pid>/exe` points to the chrome binary.
+- 429 / IpBlocked from YouTube or any site = exit-IP problem, not a code problem. Switch egress early: **Steel** (see `steel-browser` skill) provides a different exit IP — plan B instead of exhausting local workarounds (2026-10-25: Steel was found ~60 bash calls too late).
 - Ask before leaving cloud browsers running; stop them with `stop_remote_daemon(name)` or `PATCH /browsers/{id} {"action":"stop"}`.
 
 ## Domain Skills

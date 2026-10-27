@@ -42,10 +42,28 @@ Request body is passed as a **JSON string via `--json`**.
 | `keep` | Google Keep API v1 |
 | `meet` | Google Meet API v2 |
 | `workflow` / `wf` | Workflow (custom) |
+| `reports` | Admin SDK Reports (alias de `admin-reports`) |
+| `events` | Google Workspace Events API (subscriptions) |
+| `modelarmor` | Model Armor API |
+| `script` | Apps Script API |
 
-For unlisted APIs, use `<api>:<version>` syntax (e.g. `youtube:v3`).
+For unlisted APIs, `<api>:<version>` syntax exists — but only services registered in the binary are callable (see Services supportés below).
 
 **🚨 Common mistake**: `spreadsheets` is NOT a valid service — use `sheets`.
+
+## Services supportés
+
+The table above is the FULL registry (re-verified 2026-10-25): `gmail`, `sheets`, `drive`, `calendar`,
+`admin-reports`, `reports`, `docs`, `slides`, `tasks`, `people`, `chat`, `classroom`, `forms`, `keep`,
+`meet`, `workflow`, `events`, `modelarmor`, `script`. Authoritative source: any unknown service's error
+message prints the complete known list — `gws youtube:v3 videos list` → "Unknown service 'youtube'.
+Known services: drive, sheets, gmail, calendar, admin-reports, reports, docs, slides, tasks, people,
+chat, classroom, forms, keep, meet, events, modelarmor, workflow, wf, script." Any other service
+fails — `<api>:<version>` syntax included.
+
+**🚨 YouTube n'est PAS couvert par gws** (scopes Workspace uniquement — `gws youtube:v3 ...` fails;
+verified 2026-10-25 via 2 failed calls + `strings` on the binary). For YouTube use `yt-dlp` or the
+`youtube-research` skill — not gws.
 
 
 ## Argument conventions

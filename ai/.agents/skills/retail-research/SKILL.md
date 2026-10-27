@@ -1,6 +1,6 @@
 ---
 name: retail-research
-description: "USE WHEN buying something NEW: 'quel X acheter', 'meilleur rapport qualite/prix', 'la meta pour acheter Y', price benchmarks, product comparisons, before/after prices. 4-wave process: orientation (web+YouTube) -> prices (steel extractors: amazon.fr, aliexpress, but, conforama, manomano, ikea…) -> community validation -> seller reputation. Faithful-advisor report with linked prices. NOT for second-hand/local (social-marketplace-research), opinions-only questions, or non-shopping research (research-assistant)."
+description: "USE WHEN buying something NEW: 'quel X acheter', 'meilleur rapport qualite/prix', 'la meta pour acheter Y', price benchmarks, product comparisons, before/after prices. 5-wave process (Wave 0 = usage cadrage): orientation (web+YouTube) -> prices (steel extractors: amazon.fr, aliexpress, but, conforama, manomano, ikea…) -> community validation -> seller reputation. Faithful-advisor report with linked prices. NOT for second-hand/local (social-marketplace-research), opinions-only questions, or non-shopping research (research-assistant)."
 ---
 
 ## Role
@@ -22,6 +22,15 @@ social-marketplace-research).
 ---
 
 ## The Multi-Wave Research Process
+
+### Wave 0 — Cadrage (usage clarification)
+
+If the product implies a usage choice, ask ONE clarification question before any fetch: mounting/usage
+type (ex: support TV → mural vs pied de meuble vs chariot), pièce visée, fixation existante. Numbered
+options (he answers by numbers); fold the answer into the plan message.
+
+Proof (2026-10-25): a full wall-mount report was delivered before the user corrected « sur meuble,
+pas mur » → Wave 1-2 entirely refetched (~15 fetches). One question up front kills this.
 
 ### Wave 1 — Broad Orientation & Discovery
 
@@ -88,7 +97,7 @@ For each shortlisted item verify both product AND seller:
 ## Execution Rules
 
 1. **Link everything** — Every price, review, and claim MUST have a URL
-2. **Multi-wave is mandatory** — Orient → Source → Validate → Synthesize
+2. **Multi-wave is mandatory** — Cadrage → Orient → Source → Validate → Synthesize
 3. **Trust no one** — Always verify product AND seller/brand reputation
 4. **Use community signal** — YouTube + forums + review platforms are the differentiators (Reddit: STANDBY — see Wave 3)
 5. **Be the advisor** — Highlight red flags, return policies, and shipping risks
@@ -160,9 +169,29 @@ uv run --with requests --with certifi --with beautifulsoup4 python3 ~/.opencode/
 ```
 (Do not invent a `search` subcommand - it fails; session 01a13742 wasted 2 calls on it.)
 
+### Résolution de liens courts (table de décision — avant tout fetch de devinette)
+
+| Lien | Traitement |
+|---|---|
+| `amzn.eu/d/xxx`, `a.co/d/xxx`, `amzn.to/xxx` | ASIN short link → `curl -sIL "<url>"` (HEAD + redirects), lire l'URL finale (`/dp/<ASIN>`). 404 sans Location = lien mort, drop (vérifié 2026-10-25 sur `amzn.eu/d/0cGAia3J` → 404 direct). Fallback: steel fetch si curl est bloqué. |
+| `gofile.io/d/xxx` | Vérifier si vivant via l'API `api.gofile.io` (token) AVANT d'explorer la page; « removed after a period of inactivity » = mort, drop immédiatement. Sans token la réponse est `{"status":"error-token"}` = endpoint vivant, PAS un signal de lien mort; id mort avec token → `error-notFound`. |
+| `paste.ee`, `rentry.co`, pastebin-like | `curl -sL` direct (texte brut; rentry: suffixer `/raw`). |
+
+Never probe `/d/<id>` blindly across domains: 2026-10-25, `amzn.eu/d/0cGAia3J` cost ~10 guess
+fetches (gofile, paste.ee, pastebin, rentry, amazon.fr/d/, a.co, amzn.to) before a curl resolved it
+to myWall HP49L. `curl -sIL` first, always.
+
+### Specs d'écrans pro (poids, VESA)
+
+For pro display references (ex. Samsung SyncMaster): consumer sources fail (vendor site 404 on
+discontinued models, Icecat/manualslib blocked). Reliable source: **monitor-information.de** (worked
+where 6+ fetches elsewhere failed). VESA: never trust the user's claim or a single source — confirm
+on **2 sources** (2026-10-25: user announced 400x400, real was 600x400 on a SyncMaster 400MX-3).
+Weight: after 2 failed attempts, reason with a margin range and flag it — don't burn the budget.
+
 ## Plan Visibility (anti-stall)
 
-Before ANY tool call, output a short plan message: the 4 waves and what each will produce, in 3-6 lines. The user must see
+Before ANY tool call, output a short plan message: the waves (0 cadrage → 4 synthèse) and what each will produce, in 3-6 lines. The user must see
 where this is going within the first minute or he aborts the run (observed 2026-10-13,
 session 01a13724: 3 min of silent tool-checking = aborted). Do NOT pre-verify every tool
 exists; skill paths are maintained and doctor.sh covers health. Dispatch.

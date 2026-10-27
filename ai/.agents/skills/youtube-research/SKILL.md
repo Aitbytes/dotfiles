@@ -1,6 +1,6 @@
 ---
 name: youtube-research
-description: "USE WHEN the answer lives in videos: product reviews, tutorials, tests, conference talks, interviews, 'ce qu'en disent les youtubeurs'. Transcript-first: never summarize a video without its transcript (8-candidate budget, audit block). Cross-references retail-research and social-marketplace-research."
+description: "USE WHEN the answer lives in videos: product reviews, tutorials, tests, conference talks, interviews, 'ce qu'en disent les youtubeurs', transcripts de vidéos. Also USE WHEN listing une playlist, une chaîne, Watch Later (list=WL) ou abonnements en masse (yt-dlp --flat-playlist). Transcript-first: never summarize a video without its transcript (8-candidate budget, audit block). Cross-references retail-research and social-marketplace-research."
 ---
 
 ## Persona Activation
@@ -98,6 +98,92 @@ HTTP_PROXY= HTTPS_PROXY= \
   uv run --with requests --with certifi --with youtube-transcript-api \
     python3 ~/.opencode/tools/youtube.py transcript "VIDEO_ID_OR_URL"
 ```
+
+---
+
+## Recettes éprouvées (2026-10)
+
+### Listing playlist / chaîne fiable (Watch Later, abonnements)
+
+```
+SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+  yt-dlp --cookies-from-browser brave --flat-playlist -J <url> > listing.json
+```
+
+- JSON natif `-J` **obligatoire** — jamais de parsing de texte délimité (`|`, CSV) : des titres
+  contenant `|` ou des retours à la ligne ont déjà fait perdre 126 lignes.
+- Quirk NixOS : `SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt` requis pour yt-dlp.
+- Cookies navigateur > 90 jours → warning fréquent : préférer un re-login plutôt qu'itérer.
+- Chaîne : préférer `youtube.py channel <url> --meta` (titres + dates en batch, voir ci-dessous).
+
+### Transcripts anti-429 / IpBlocked
+
+Quand `youtube-transcript-api` et yt-dlp retournent 429/IpBlocked (PO token), méthode UI+CDP
+(testée 2026-10-25 : 6/9 vidéos extraites) :
+
+```bash
+# 1. Navigateur CDP — Chrome ≥136 REFUSE le debug remote sur le profil par défaut :
+#    toujours un --user-data-dir dédié. setsid (pas nohup) pour survivre au shell.
+setsid chromium --headless=new --user-data-dir=/tmp/chr-prof --remote-debugging-port=9222 \
+  --no-first-run --no-default-browser-check --disable-sync --disable-gpu about:blank \
+  >/tmp/chromium.log 2>&1 < /dev/null & disown
+sleep 6 && curl -sm3 http://127.0.0.1:9222/json/version   # sanity check
+
+# 2. Ouvrir la vidéo, cliquer « …Afficher la transcription », intercepter :
+uv run --with websocket-client python /tmp/cdp_transcript.py VIDEO_ID
+```
+
+Squelette de `/tmp/cdp_transcript.py` (websocket-client ; `suppress_origin=True` OBLIGATOIRE,
+sinon WS refusé) :
+
+1. Créer l'onglet : `PUT http://127.0.0.1:9222/json/new` (PAS GET) → target ; puis
+   `create_connection(tgt['webSocketDebuggerUrl'], timeout=150, suppress_origin=True)`.
+2. `Network.enable` + `Page.enable` ; `Page.navigate` sur `watch?v=ID` ; sleep ~12 s.
+3. Clic UI : `document.querySelector('#expand')?.click()` ; sleep 1,5 s ; puis
+   `document.querySelector('ytd-video-description-transcript-section-renderer button')?.click()`.
+4. Boucle `ws.recv()` ~50 s : sur `Network.requestWillBeSent`, garder le requestId si l'URL
+   contient `get_panel` **OU** `get_transcript` — l'endpoint VARIE selon la version du client
+   (double fallback d'interception) ; noter le status via `Network.responseReceived` ; puis
+   `Network.getResponseBody {requestId}` → corps ~305KB (JSON).
+5. Parser en parcours récursif : collecter les dicts `transcriptSegmentViewModel` dans l'ordre
+   du document, extraire `snippet.simpleText` (ou `runs[].text`) + `startMs` → segments.
+   Plus besoin de `timedtext` (souvent 429) : tout est dans `get_panel`.
+6. Échecs : FAILED_PRECONDITION sur une vidéo = passer à la suivante, ne pas boucler ;
+   IpBlocked persistant = basculer sur une **IP de sortie différente** (voir skill **steel-browser**).
+   (Piège bash : `pkill -f` peut se tuer lui-même — matcher le pid, pas le pattern.)
+
+### Boucle resolve avec retry
+
+```bash
+for id in $IDS; do
+  out=$(uv run --with requests --with certifi \
+    python3 ~/.opencode/tools/youtube.py resolve "$id" --format json)
+  if echo "$out" | grep -q '"title": null'; then
+    out=$(uv run --with requests --with certifi \
+      python3 ~/.opencode/tools/youtube.py resolve "$id" --format json)  # retry ×1, pas plus
+  fi
+  echo "$out" > "resolve_$id.json"
+done
+```
+
+Titre vide (`title: null` / `# YouTube Video: |`) = retry ×1 maximum, puis noter l'échec et passer
+à la suite. Ne jamais re-resoudre une vidéo qui a déjà un titre.
+
+### Rappel outil youtube.py (options corrigées 2026-10)
+
+`~/.opencode/tools/youtube.py` reste le premier réflexe (search / resolve / channel / transcript) :
+
+- `channel <url> --meta` — ajoute titres + dates de publication en batch (yt-dlp `--flat-playlist -J`,
+  puis oEmbed par vidéo pour les titres manquants). Évite ~20 resolves individuels. `list` = alias.
+- `transcript <id> --out FICHIER` — écrit le fichier avec la bonne extension (auto-correction
+  `.json` → `.md` quand la sortie est markdown) : fini les JSONDecodeError + renames manuels.
+
+### Coûts token
+
+- Listing → sortie `-J` native (JSON), relire le fichier une seule fois.
+- Transcripts → ne lire chaque fichier de transcript qu'**UNE fois** (pas de read → sed → re-read :
+  c'est ~240KB de contexte économisés pour 8 transcripts).
+- Métadonnées → résoudre en batch quand l'outil le permet (`channel --meta`) au lieu de N resolves.
 
 ---
 

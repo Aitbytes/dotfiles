@@ -23,6 +23,17 @@ PATCH /api/inbox/{id} -d '{"content": "Updated content"}'
 
 # Process item (marks as PROCESSED — this is the GTD "clarify" step)
 POST /api/inbox/{id}/process
+-d '{"decision": "actionable"}'
+# -> creates a TASK from the item (isNextAction=true); response includes {task}
+
+POST /api/inbox/{id}/process
+-d '{"decision": "not_actionable", "disposition": "trash"|"someday"|"reference"}'
+# -> someday creates a SOMEDAY MAYBE project; trash/reference just file the item
+
+# ⚠️ Body is REQUIRED. Calling POST /api/inbox/{id}/process without a body
+# crashes the handler with HTTP 500. The CLI (fixed 2026-10-26) sends it:
+#   tandem inbox process <id>                                          # actionable
+#   tandem inbox process <id> --decision not_actionable --disposition trash
 
 # Delete
 DELETE /api/inbox/{id}
