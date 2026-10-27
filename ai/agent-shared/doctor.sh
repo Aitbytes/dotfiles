@@ -88,6 +88,30 @@ PY
   [ "${N%%/*}" = "0" ] && line ok "sites.json: all rows fresh ($N stale)" || line warn "sites.json: $N rows stale/undated — probe before trusting $DET"
 else line FAIL "sites.json: missing at $SJ"; fi
 
+# 9. cohérence de la couche IA (post-rationalisation 2026-10-27)
+check_link() { local p="$1" want="$2"; [ -L "$p" ] && [ "$(readlink -f "$p")" = "$(readlink -f "$want")" ] && line ok "symlink: $p" || line FAIL "symlink: $p — attendu -> $want"; }
+check_link "$HOME/.agents" "$HOME/dotfiles/ai/.agents"
+check_link "$HOME/.pi/agent/agents" "$HOME/dotfiles/ai/agents"
+check_link "$HOME/.pi/prompts" "$HOME/dotfiles/ai/.pi/prompts"
+check_link "$HOME/.pi/agent/prompts" "$HOME/dotfiles/ai/.pi/agent/prompts"
+for d in .claude .codex .copilot .cursor .gemini; do
+  check_link "$HOME/$d/skills/browser-use" "$HOME/dotfiles/ai/.agents/skills/browser-use"
+done
+[ -e "$HOME/.pi/agents" ] && line FAIL "~/.pi/agents existe encore (supprimé en phase 2 — les agents PECB vivent dans ~/mypecb-extract/.pi/agents)" || line ok "~/.pi/agents: absent (agents PECB en scope projet)"
+
+# 9b. tools relocalisés + état
+[ -x "$HOME/dotfiles/ai/tools/env-guard.sh" ] && line ok "tools: ai/tools/env-guard.sh présent" || line FAIL "tools: ai/tools/env-guard.sh manquant"
+[ -r "$HOME/.local/state/travel-planner/trips.json" ] && line ok "état: travel-planner dans ~/.local/state" || line warn "état: travel-planner trips.json absent (première utilisation ?)"
+
+# 9c. dédoublonnages (post phase 2)
+pipx list 2>/dev/null | grep -q 'package yt-dlp' && line FAIL "doublon: yt-dlp encore chez pipx (garder uv seulement)" || line ok "pas de doublon yt-dlp"
+ls "$HOME/.npm-global/lib/node_modules/@linkedapi" >/dev/null 2>&1 && line FAIL "doublon: @linkedapi/linkedin-cli npm encore présent (garder uv linkedin-cli)" || line ok "pas de doublon linkedin"
+
+# 9d. agents user-scope versionnés
+for a in web-researcher grumpy-reviewer svg-visualizer; do
+  [ -r "$HOME/dotfiles/ai/agents/$a.md" ] && line ok "agent versionné: $a" || line FAIL "agent versionné: $a manquant dans dotfiles/ai/agents/"
+done
+
 echo "────────────────────────────"
 echo "summary: $PASS ok, $WARN warn, $FAIL fail"
 [ "$FAIL" -eq 0 ]
