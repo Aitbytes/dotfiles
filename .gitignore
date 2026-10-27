@@ -17,3 +17,6 @@ opencode/.opencode/tools/.reddit_data/
 # research-stack refactor (P0 baseline)
 ai/.agents/skills/.bak/
 **/.venv/
+
+# dépendances JS (jamais versionnées)
+**/node_modules/
