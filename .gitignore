@@ -20,3 +20,7 @@ ai/.agents/skills/.bak/
 
 # dépendances JS (jamais versionnées)
 **/node_modules/
+
+# Dépôt à part entière (Aitbytes/astronvim_config), pas un sous-module déclaré :
+# dotfiles ne pointe plus dessus. Le clone reste sur le disque.
+nvim/.config/Astro/lua/user/
